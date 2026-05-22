@@ -15,7 +15,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 // Allow the login page and static assets without authentication
-                .requestMatchers("/login", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/login", "/api/**", "/css/**", "/js/**", "/images/**").permitAll()
                 // Everything else requires login
                 .anyRequest().authenticated()
             )

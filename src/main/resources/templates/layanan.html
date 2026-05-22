@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoAja — Layanan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
+    <style>
+        /* Layanan cards grid — used instead of table for this page */
+        .layanan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+        }
+        .layanan-card {
+            padding: 3rem 2.5rem;
+            border-right: 2px solid var(--border);
+            border-bottom: 2px solid var(--border);
+            transition: background 0.3s;
+            cursor: default;
+        }
+        .layanan-card:hover { background: rgba(255,255,255,0.03); }
+        .layanan-card-id {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-bottom: 1rem;
+        }
+        .layanan-card-name {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            margin-bottom: 0.75rem;
+            line-height: 1;
+        }
+        .layanan-card-tarif {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            font-variant-numeric: tabular-nums;
+        }
+        .layanan-card-tarif span {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-left: 0.4rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-brand" href="/">Go<span>Aja</span></a>
+    <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="/">Beranda</a></li>
+        <li><a href="/orders">Pesanan</a></li>
+        <li><a href="/drivers">Driver</a></li>
+        <li><a href="/layanan" class="active" aria-current="page">Layanan</a></li>
+    </ul>
+    <div class="nav-right">
+        <span class="nav-user" sec:authentication="name">User</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Keluar</button>
+        </form>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header reveal">
+    <div class="page-header-left">
+        <p class="page-eyebrow">Manajemen</p>
+        <h1 class="page-title">Layanan</h1>
+    </div>
+</div>
+
+<!-- FLASH MESSAGES -->
+<div style="padding: 0 5vw; margin-top: 1.5rem;">
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
+</div>
+
+<!-- SPLIT LAYOUT -->
+<div class="split-layout">
+
+    <!-- LEFT: Layanan cards -->
+    <div class="split-left">
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(layananList)}" class="empty-state reveal">
+            <div class="empty-state-num" aria-hidden="true">0</div>
+            <p class="empty-state-msg">Belum ada layanan terdaftar</p>
+        </div>
+
+        <!-- Cards -->
+        <div th:unless="${#lists.isEmpty(layananList)}" class="layanan-grid">
+            <div th:each="l : ${layananList}" class="layanan-card reveal">
+                <p class="layanan-card-id" th:text="'ID — ' + ${l.id}">ID — 1</p>
+                <h2 class="layanan-card-name" th:text="${l.namaLayanan}">GoRide</h2>
+                <p class="layanan-card-tarif">
+                    Rp <span th:text="${#numbers.formatInteger(l.tarifPerKm, 1, 'COMMA')}">3.000</span>
+                    <span>/ km</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Add layanan form -->
+    <div class="split-right">
+        <p class="split-right-title">Tambah Layanan Baru</p>
+
+        <form th:action="@{/layanan}" method="post" novalidate>
+            <div class="form-field">
+                <label for="namaLayanan">Nama Layanan</label>
+                <input type="text" id="namaLayanan" name="namaLayanan"
+                       placeholder="GoRide" required>
+            </div>
+            <div class="form-field">
+                <label for="tarifPerKm">Tarif per Km (Rp)</label>
+                <input type="number" id="tarifPerKm" name="tarifPerKm"
+                       placeholder="3000" min="0" step="500" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Tambah Layanan</button>
+                <button type="reset" class="btn-outline">Reset</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Go<span>Aja</span></div>
+        <p class="footer-copy">&copy; 2025 GoAja &mdash; UAS Pemrograman Berorientasi Objek</p>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('navToggle').addEventListener('click', function() {
+        const nl = document.getElementById('navLinks');
+        const open = nl.classList.toggle('open');
+        this.setAttribute('aria-expanded', open);
+    });
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

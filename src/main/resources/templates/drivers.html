@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoAja — Driver</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-brand" href="/">Go<span>Aja</span></a>
+    <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="/">Beranda</a></li>
+        <li><a href="/orders">Pesanan</a></li>
+        <li><a href="/drivers" class="active" aria-current="page">Driver</a></li>
+        <li><a href="/layanan">Layanan</a></li>
+    </ul>
+    <div class="nav-right">
+        <span class="nav-user" sec:authentication="name">User</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Keluar</button>
+        </form>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header reveal">
+    <div class="page-header-left">
+        <p class="page-eyebrow">Manajemen</p>
+        <h1 class="page-title">Driver</h1>
+    </div>
+</div>
+
+<!-- FLASH MESSAGES -->
+<div style="padding: 0 5vw; margin-top: 1.5rem;">
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
+</div>
+
+<!-- SPLIT LAYOUT: list left, form right -->
+<div class="split-layout">
+
+    <!-- LEFT: Driver list -->
+    <div class="split-left">
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(drivers)}" class="empty-state reveal">
+            <div class="empty-state-num" aria-hidden="true">0</div>
+            <p class="empty-state-msg">Belum ada driver terdaftar</p>
+        </div>
+
+        <!-- Table -->
+        <div th:unless="${#lists.isEmpty(drivers)}" class="data-table-wrap reveal">
+            <table class="data-table" aria-label="Daftar driver">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Kendaraan</th>
+                        <th>Plat Nomor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="driver : ${drivers}">
+                        <td th:text="${driver.id}">1</td>
+                        <td th:text="${driver.nama}">—</td>
+                        <td th:text="${driver.email}">—</td>
+                        <td th:text="${driver.kendaraan}">—</td>
+                        <td th:text="${driver.platNomor}">—</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${driver.available ? 'badge-active' : 'badge-busy'}"
+                                  th:text="${driver.available ? 'Tersedia' : 'Sibuk'}">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- RIGHT: Add driver form -->
+    <div class="split-right">
+        <p class="split-right-title">Tambah Driver Baru</p>
+
+        <form th:action="@{/drivers}" method="post" novalidate>
+            <div class="form-field">
+                <label for="nama">Nama Lengkap</label>
+                <input type="text" id="nama" name="nama"
+                       placeholder="Budi Santoso" required>
+            </div>
+            <div class="form-field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email"
+                       placeholder="budi@email.com" required>
+            </div>
+            <div class="form-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       placeholder="••••••••" required>
+            </div>
+            <div class="form-field">
+                <label for="kendaraan">Jenis Kendaraan</label>
+                <input type="text" id="kendaraan" name="kendaraan"
+                       placeholder="Honda Beat 2022" required>
+            </div>
+            <div class="form-field">
+                <label for="platNomor">Plat Nomor</label>
+                <input type="text" id="platNomor" name="platNomor"
+                       placeholder="B 1234 XYZ" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Tambah Driver</button>
+                <button type="reset" class="btn-outline">Reset</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Go<span>Aja</span></div>
+        <p class="footer-copy">&copy; 2025 GoAja &mdash; UAS Pemrograman Berorientasi Objek</p>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('navToggle').addEventListener('click', function() {
+        const nl = document.getElementById('navLinks');
+        const open = nl.classList.toggle('open');
+        this.setAttribute('aria-expanded', open);
+    });
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

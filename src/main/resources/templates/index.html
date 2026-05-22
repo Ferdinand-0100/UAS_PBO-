@@ -11,201 +11,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
 
     <style>
-        /* ═══════════════════════════════════════
-           DESIGN TOKENS — Kinetic Typography
-        ═══════════════════════════════════════ */
-        :root {
-            --bg:        #09090B;
-            --fg:        #FAFAFA;
-            --muted:     #27272A;
-            --muted-fg:  #A1A1AA;
-            --accent:    #DE3163;
-            --accent-fg: #000000;
-            --border:    #3F3F46;
-        }
+        /* ── Page-specific styles only ── */
 
-        /* ═══════════════════════════════════════
-           BASE RESET & TYPOGRAPHY
-        ═══════════════════════════════════════ */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-            background-color: var(--bg);
-            color: var(--fg);
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1rem;
-            line-height: 1.5;
-            overflow-x: hidden;
-        }
-
-        ::selection { background: var(--accent); color: var(--accent-fg); }
-
-        /* ═══════════════════════════════════════
-           NOISE TEXTURE OVERLAY
-        ═══════════════════════════════════════ */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.03;
-            mix-blend-mode: overlay;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
-
-        /* ═══════════════════════════════════════
-           NAVBAR
-        ═══════════════════════════════════════ */
-        .site-nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-            padding: 0 5vw;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 64px;
-        }
-
-        .nav-brand {
-            font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: -0.04em;
-            text-transform: uppercase;
-            color: var(--fg);
-            text-decoration: none;
-        }
-
-        .nav-brand span { color: var(--accent); }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--muted-fg);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover, .nav-links a.active { color: var(--fg); }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .nav-user {
-            font-size: 0.75rem;
-            font-weight: 500;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--muted-fg);
-        }
-
-        .btn-logout {
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--accent-fg);
-            background: var(--accent);
-            border: none;
-            padding: 0.5rem 1.25rem;
-            cursor: pointer;
-            border-radius: 0;
-            transition: opacity 0.2s, transform 0.15s;
-        }
-
-        .btn-logout:hover { opacity: 0.85; transform: scale(1.03); }
-        .btn-logout:active { transform: scale(0.97); }
-
-        .nav-toggle {
-            display: none;
-            background: none;
-            border: 2px solid var(--border);
-            color: var(--fg);
-            padding: 0.4rem 0.6rem;
-            cursor: pointer;
-            font-size: 1.1rem;
-        }
-
-        /* ═══════════════════════════════════════
-           HERO — styles removed (hero moved to login.html)
-        ═══════════════════════════════════════ */
-
-        /* ═══════════════════════════════════════
-           MARQUEE — styles removed (marquee moved to login.html)
-        ═══════════════════════════════════════ */
-
-        /* ═══════════════════════════════════════
-           BUTTONS (used in order form & services)
-        ═══════════════════════════════════════ */
-        .btn-primary-accent {
-            display: inline-block;
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: #ffffff;
-            background: var(--accent);
-            border: none;
-            padding: 1rem 2.5rem;
-            text-decoration: none;
-            cursor: pointer;
-            border-radius: 0;
-            transition: transform 0.2s, opacity 0.2s;
-        }
-
-        .btn-primary-accent:hover { transform: scale(1.05); opacity: 0.9; color: #ffffff; }
-        .btn-primary-accent:active { transform: scale(0.95); }
-
-        .btn-outline-accent {
-            display: inline-block;
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--fg);
-            background: transparent;
-            border: 2px solid var(--border);
-            padding: 1rem 2.5rem;
-            text-decoration: none;
-            cursor: pointer;
-            border-radius: 0;
-            transition: background 0.2s, color 0.2s, border-color 0.2s;
-        }
-
-        .btn-outline-accent:hover {
-            background: var(--fg);
-            color: var(--bg);
-            border-color: var(--fg);
-        }
-
-        /* ═══════════════════════════════════════
-           ORDER FORM SECTION
-        ═══════════════════════════════════════ */
+        /* Order form layout */
         .order-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
             border-bottom: 2px solid var(--border);
         }
-
         .order-left {
             padding: 6rem 5vw;
             border-right: 2px solid var(--border);
@@ -213,7 +29,6 @@
             flex-direction: column;
             justify-content: center;
         }
-
         .section-label {
             font-size: 0.7rem;
             font-weight: 700;
@@ -222,7 +37,6 @@
             color: var(--accent);
             margin-bottom: 1rem;
         }
-
         .section-heading {
             font-size: clamp(2.5rem, 5vw, 5rem);
             font-weight: 700;
@@ -232,90 +46,32 @@
             color: var(--fg);
             margin-bottom: 1.5rem;
         }
-
         .section-body {
             font-size: 1rem;
             color: var(--muted-fg);
             line-height: 1.7;
             max-width: 420px;
         }
-
-        .order-right {
-            padding: 6rem 5vw;
-        }
-
-        .form-field {
-            margin-bottom: 0;
-            border-bottom: 2px solid var(--border);
-            padding: 1.5rem 0;
-            transition: border-color 0.2s;
-        }
-
-        .form-field:last-of-type { border-bottom: none; }
-        .form-field:focus-within { border-color: var(--accent); }
-
-        .form-field label {
-            display: block;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--muted-fg);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-field input,
-        .form-field select {
-            width: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--fg);
-            letter-spacing: -0.02em;
-            padding: 0;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-
-        .form-field input::placeholder { color: var(--muted); }
-
-        .form-field select option {
-            background: var(--bg);
-            color: var(--fg);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-        }
-
-        .form-row .form-field:first-child {
-            border-right: 2px solid var(--border);
-            padding-right: 2rem;
-        }
-
-        .form-row .form-field:last-child {
-            padding-left: 2rem;
-        }
-
+        .order-right { padding: 6rem 5vw; }
         .form-submit-row {
             margin-top: 2.5rem;
             display: flex;
             align-items: center;
             gap: 1.5rem;
         }
-
-        /* ═══════════════════════════════════════
-           SERVICES SECTION
-        ═══════════════════════════════════════ */
-        .services-section {
-            border-bottom: 2px solid var(--border);
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
         }
+        .form-row .form-field:first-child {
+            border-right: 2px solid var(--border);
+            padding-right: 2rem;
+        }
+        .form-row .form-field:last-child { padding-left: 2rem; }
 
+        /* Services section */
+        .services-section { border-bottom: 2px solid var(--border); }
         .services-header {
             padding: 5rem 5vw 3rem;
             border-bottom: 2px solid var(--border);
@@ -324,34 +80,21 @@
             justify-content: space-between;
             gap: 2rem;
         }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-        }
-
+        .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
         .service-card {
             padding: 3rem 2.5rem;
             border-right: 2px solid var(--border);
             cursor: pointer;
-            transition: background 0.3s, color 0.3s;
-            position: relative;
+            transition: background 0.3s;
             overflow: hidden;
         }
-
         .service-card:last-child { border-right: none; }
-
-        .service-card:hover {
-            background: var(--accent);
-        }
-
+        .service-card:hover { background: var(--accent); }
         .service-card:hover .service-title,
         .service-card:hover .service-desc,
         .service-card:hover .service-tag,
         .service-card:hover .service-num { color: var(--accent-fg); }
-
-        .service-card:hover .service-img-wrap img { filter: grayscale(0%); }
-
+        .service-card:hover .service-img-wrap img { filter: grayscale(0%); transform: scale(1.05); }
         .service-img-wrap {
             width: 100%;
             height: 200px;
@@ -359,7 +102,6 @@
             margin-bottom: 2rem;
             border: 2px solid var(--border);
         }
-
         .service-img-wrap img {
             width: 100%;
             height: 100%;
@@ -368,9 +110,6 @@
             filter: grayscale(40%);
             transition: filter 0.3s, transform 0.3s;
         }
-
-        .service-card:hover .service-img-wrap img { transform: scale(1.05); }
-
         .service-num {
             font-size: 0.65rem;
             font-weight: 700;
@@ -380,7 +119,6 @@
             margin-bottom: 1rem;
             transition: color 0.3s;
         }
-
         .service-title {
             font-size: 2rem;
             font-weight: 700;
@@ -391,7 +129,6 @@
             line-height: 1;
             transition: color 0.3s;
         }
-
         .service-desc {
             font-size: 0.9rem;
             color: var(--muted-fg);
@@ -399,7 +136,6 @@
             margin-bottom: 1.5rem;
             transition: color 0.3s;
         }
-
         .service-tag {
             font-size: 0.65rem;
             font-weight: 700;
@@ -411,27 +147,21 @@
             display: inline-block;
             transition: color 0.3s, border-color 0.3s;
         }
-
         .service-card:hover .service-tag { border-color: var(--accent-fg); }
 
-        /* ═══════════════════════════════════════
-           STATS SECTION (big numbers)
-        ═══════════════════════════════════════ */
+        /* Stats section */
         .stats-section {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             border-bottom: 2px solid var(--border);
         }
-
         .stat-block {
             padding: 4rem 2.5rem;
             border-right: 2px solid var(--border);
             position: relative;
             overflow: hidden;
         }
-
         .stat-block:last-child { border-right: none; }
-
         .stat-bg-num {
             position: absolute;
             bottom: -1rem;
@@ -443,9 +173,7 @@
             letter-spacing: -0.06em;
             pointer-events: none;
             user-select: none;
-            aria-hidden: true;
         }
-
         .stat-value {
             font-size: clamp(2.5rem, 4vw, 4rem);
             font-weight: 700;
@@ -454,9 +182,7 @@
             line-height: 1;
             margin-bottom: 0.75rem;
         }
-
         .stat-value span { color: var(--accent); }
-
         .stat-desc {
             font-size: 0.75rem;
             font-weight: 600;
@@ -465,14 +191,11 @@
             color: var(--muted-fg);
         }
 
-        /* ═══════════════════════════════════════
-           FOOTER
-        ═══════════════════════════════════════ */
-        .site-footer {
+        /* Full footer for dashboard */
+        .site-footer-full {
             padding: 5rem 5vw 3rem;
             border-top: 2px solid var(--border);
         }
-
         .footer-top {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
@@ -481,8 +204,7 @@
             border-bottom: 1px solid var(--border);
             margin-bottom: 2rem;
         }
-
-        .footer-brand {
+        .footer-brand-lg {
             font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.05em;
@@ -490,16 +212,8 @@
             color: var(--fg);
             margin-bottom: 1rem;
         }
-
-        .footer-brand span { color: var(--accent); }
-
-        .footer-tagline {
-            font-size: 0.9rem;
-            color: var(--muted-fg);
-            line-height: 1.6;
-            max-width: 320px;
-        }
-
+        .footer-brand-lg span { color: var(--accent); }
+        .footer-tagline { font-size: 0.9rem; color: var(--muted-fg); line-height: 1.6; max-width: 320px; }
         .footer-col-title {
             font-size: 0.65rem;
             font-weight: 700;
@@ -508,29 +222,10 @@
             color: var(--fg);
             margin-bottom: 1.5rem;
         }
-
-        .footer-links {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .footer-links a {
-            font-size: 0.85rem;
-            color: var(--muted-fg);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
+        .footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+        .footer-links a { font-size: 0.85rem; color: var(--muted-fg); text-decoration: none; transition: color 0.2s; }
         .footer-links a:hover { color: var(--accent); }
-
-        .footer-bottom {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
+        .footer-bottom { display: flex; align-items: center; justify-content: space-between; }
         .footer-copy {
             font-size: 0.7rem;
             font-weight: 500;
@@ -539,66 +234,25 @@
             color: var(--muted-fg);
         }
 
-        /* ═══════════════════════════════════════
-           SCROLL REVEAL
-        ═══════════════════════════════════════ */
-        .reveal {
-            opacity: 0;
-            transform: translateY(24px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .reveal { opacity: 1; transform: none; transition: none; }
-        }
-
-        /* ═══════════════════════════════════════
-           RESPONSIVE
-        ═══════════════════════════════════════ */
+        /* Responsive overrides */
         @media (max-width: 1024px) {
             .stats-section { grid-template-columns: repeat(2, 1fr); }
             .stat-block:nth-child(2) { border-right: none; }
             .stat-block:nth-child(3) { border-top: 2px solid var(--border); }
             .stat-block:nth-child(4) { border-top: 2px solid var(--border); border-right: none; }
         }
-
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .nav-toggle { display: block; }
-            .nav-links.open {
-                display: flex;
-                flex-direction: column;
-                position: absolute;
-                top: 64px;
-                left: 0;
-                right: 0;
-                background: var(--bg);
-                border-bottom: 1px solid var(--border);
-                padding: 1.5rem 5vw;
-                gap: 1.25rem;
-                z-index: 99;
-            }
-
-
             .order-section { grid-template-columns: 1fr; }
             .order-left { padding: 4rem 5vw 2rem; border-right: none; border-bottom: 2px solid var(--border); }
             .order-right { padding: 3rem 5vw 4rem; }
             .form-row { grid-template-columns: 1fr; }
             .form-row .form-field:first-child { border-right: none; padding-right: 0; }
             .form-row .form-field:last-child { padding-left: 0; }
-
             .services-grid { grid-template-columns: 1fr; }
             .service-card { border-right: none; border-bottom: 2px solid var(--border); }
             .service-card:last-child { border-bottom: none; }
             .services-header { flex-direction: column; align-items: flex-start; }
-
             .stats-section { grid-template-columns: 1fr 1fr; }
-
             .footer-top { grid-template-columns: 1fr; gap: 2.5rem; }
             .footer-bottom { flex-direction: column; gap: 1rem; align-items: flex-start; }
         }
@@ -642,7 +296,11 @@
         </p>
     </div>
     <div class="order-right reveal">
-        <form id="orderForm" novalidate>
+        <!-- Flash messages -->
+        <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+        <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
+
+        <form th:action="@{/order/submit}" method="post" novalidate>
             <div class="form-field">
                 <label for="lokasiJemput">Lokasi Penjemputan</label>
                 <input type="text" id="lokasiJemput" name="lokasiJemput"
@@ -655,27 +313,29 @@
             </div>
             <div class="form-row">
                 <div class="form-field">
-                    <label for="jenisLayanan">Jenis Layanan</label>
-                    <select id="jenisLayanan" name="layanan" required>
+                    <label for="layananId">Jenis Layanan</label>
+                    <select id="layananId" name="layananId" required>
                         <option value="">Pilih...</option>
-                        <option value="1">GoRide — Transport</option>
-                        <option value="2">GoSend — Delivery</option>
+                        <option th:each="l : ${layananList}"
+                                th:value="${l.id}"
+                                th:text="${l.namaLayanan}">
+                        </option>
                     </select>
                 </div>
                 <div class="form-field">
                     <label for="jarak">Jarak (km)</label>
                     <input type="number" id="jarak" name="jarak"
-                           placeholder="0.0" min="0" step="0.1">
+                           placeholder="0.0" min="0" step="0.1" required>
                 </div>
             </div>
             <div class="form-field">
                 <label for="estimasiHarga">Estimasi Harga</label>
-                <input type="text" id="estimasiHarga" name="estimasiHarga"
+                <input type="text" id="estimasiHarga"
                        placeholder="Rp 0" readonly aria-readonly="true">
             </div>
             <div class="form-submit-row">
-                <button type="submit" class="btn-primary-accent">Buat Pesanan</button>
-                <button type="reset" class="btn-outline-accent">Reset</button>
+                <button type="submit" class="btn-primary">Buat Pesanan</button>
+                <button type="reset" class="btn-outline">Reset</button>
             </div>
         </form>
     </div>
@@ -771,10 +431,10 @@
 <!-- ══════════════════════════════════════
      FOOTER
 ══════════════════════════════════════ -->
-<footer class="site-footer" role="contentinfo">
+<footer class="site-footer-full" role="contentinfo">
     <div class="footer-top">
         <div>
-            <div class="footer-brand">Go<span>Aja</span></div>
+            <div class="footer-brand-lg">Go<span>Aja</span></div>
             <p class="footer-tagline">
                 Sistem Transportasi &amp; Delivery berbasis Spring Boot. Cepat, aman, dan terpercaya untuk kebutuhan mobilitas sehari-hari.
             </p>
@@ -830,23 +490,26 @@
 
     // Estimate price on jarak/layanan change
     const jarakInput  = document.getElementById('jarak');
-    const layananSel  = document.getElementById('jenisLayanan');
+    const layananSel  = document.getElementById('layananId');
     const hargaInput  = document.getElementById('estimasiHarga');
 
-    // Tariff per km (matches Layanan model tarifPerKm concept)
+    // Tariff map built from Thymeleaf — populated server-side via data attributes
+    // Fallback static rates if layanan table is empty
     const tariffs = { '1': 3000, '2': 5000 };
 
     function updateEstimate() {
         const km     = parseFloat(jarakInput.value) || 0;
-        const tariff = tariffs[layananSel.value] || 0;
+        const tariff = tariffs[layananSel.value] || 2500;
         const total  = km * tariff;
         hargaInput.value = total > 0
             ? 'Rp ' + total.toLocaleString('id-ID')
             : 'Rp 0';
     }
 
-    jarakInput.addEventListener('input', updateEstimate);
-    layananSel.addEventListener('change', updateEstimate);
+    if (jarakInput && layananSel) {
+        jarakInput.addEventListener('input', updateEstimate);
+        layananSel.addEventListener('change', updateEstimate);
+    }
 </script>
 
 </body>

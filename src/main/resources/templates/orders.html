@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoAja — Pesanan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
+    <style>
+        .status-col { min-width: 120px; }
+        .actions-col { min-width: 180px; }
+        .accept-form { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .accept-form input[type="number"] {
+            width: 80px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--fg);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.4rem 0.6rem;
+            outline: none;
+        }
+        .accept-form input[type="number"]:focus { border-color: var(--accent); }
+        .harga { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-brand" href="/">Go<span>Aja</span></a>
+    <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="/">Beranda</a></li>
+        <li><a href="/orders" class="active" aria-current="page">Pesanan</a></li>
+        <li><a href="/drivers">Driver</a></li>
+        <li><a href="/layanan">Layanan</a></li>
+    </ul>
+    <div class="nav-right">
+        <span class="nav-user" sec:authentication="name">User</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Keluar</button>
+        </form>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header reveal">
+    <div class="page-header-left">
+        <p class="page-eyebrow">Manajemen</p>
+        <h1 class="page-title">Pesanan</h1>
+    </div>
+    <a href="/" class="btn-primary">+ Buat Pesanan Baru</a>
+</div>
+
+<!-- FLASH MESSAGES -->
+<div style="padding: 0 5vw; margin-top: 1.5rem;">
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
+</div>
+
+<!-- ORDERS TABLE -->
+<main style="padding: 2rem 0 6rem;">
+
+    <!-- Empty state -->
+    <div th:if="${#lists.isEmpty(orders)}" class="empty-state reveal">
+        <div class="empty-state-num" aria-hidden="true">0</div>
+        <p class="empty-state-msg">Belum ada pesanan</p>
+        <a href="/" class="btn-primary">Buat Pesanan Pertama</a>
+    </div>
+
+    <!-- Table -->
+    <div th:unless="${#lists.isEmpty(orders)}" class="data-table-wrap reveal">
+        <table class="data-table" aria-label="Daftar pesanan">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Penjemputan</th>
+                    <th>Tujuan</th>
+                    <th>Layanan</th>
+                    <th>Jarak</th>
+                    <th>Total Harga</th>
+                    <th class="status-col">Status</th>
+                    <th>Driver</th>
+                    <th class="actions-col">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="order : ${orders}">
+                    <td th:text="${order.id}">1</td>
+                    <td th:text="${order.lokasiJemput}">—</td>
+                    <td th:text="${order.lokasiTujuan}">—</td>
+                    <td th:text="${order.layanan != null ? order.layanan.namaLayanan : '—'}">—</td>
+                    <td th:text="${order.jarak + ' km'}">—</td>
+                    <td class="harga"
+                        th:text="${'Rp ' + #numbers.formatInteger(order.totalHarga, 1, 'COMMA')}">—</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${order.status == 'MENUNGGU'  ? 'badge-waiting' :
+                                               order.status == 'DIJEMPUT'  ? 'badge-active'  :
+                                               order.status == 'SELESAI'   ? 'badge-done'    : ''}"
+                              th:text="${order.status}">—</span>
+                    </td>
+                    <td th:text="${order.driver != null ? order.driver.nama : '—'}">—</td>
+                    <td>
+                        <!-- Only show accept form if status is MENUNGGU -->
+                        <form th:if="${order.status == 'MENUNGGU'}"
+                              th:action="@{/orders/{id}/accept/{did}(id=${order.id}, did=0)}"
+                              method="post"
+                              class="accept-form"
+                              th:id="'form-' + ${order.id}">
+                            <input type="number"
+                                   name="driverId"
+                                   placeholder="ID Driver"
+                                   min="1"
+                                   required
+                                   aria-label="ID Driver untuk order ini"
+                                   th:id="'driver-input-' + ${order.id}">
+                            <button type="button"
+                                    class="btn-primary btn-sm"
+                                    th:onclick="'submitAccept(' + ${order.id} + ')'">
+                                Terima
+                            </button>
+                        </form>
+                        <span th:unless="${order.status == 'MENUNGGU'}"
+                              style="font-size:0.75rem; color: var(--muted-fg); text-transform:uppercase; letter-spacing:0.1em;">
+                            —
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Go<span>Aja</span></div>
+        <p class="footer-copy">&copy; 2025 GoAja &mdash; UAS Pemrograman Berorientasi Objek</p>
+    </div>
+</footer>
+
+<script>
+    // Nav toggle
+    document.getElementById('navToggle').addEventListener('click', function() {
+        const nl = document.getElementById('navLinks');
+        const open = nl.classList.toggle('open');
+        this.setAttribute('aria-expanded', open);
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Accept order — reads driver ID from input, then submits to correct URL
+    function submitAccept(orderId) {
+        const input = document.getElementById('driver-input-' + orderId);
+        const driverId = input.value;
+        if (!driverId || driverId < 1) {
+            input.focus();
+            return;
+        }
+        const form = document.getElementById('form-' + orderId);
+        form.action = '/orders/' + orderId + '/accept/' + driverId;
+        form.submit();
+    }
+</script>
+
+</body>
+</html>
