@@ -30,25 +30,25 @@
     </div>
 </nav>
 
-<!-- PAGE HEADER -->
-<div class="page-header reveal">
-    <div class="page-header-left">
-        <p class="page-eyebrow">Manajemen</p>
-        <h1 class="page-title">Driver</h1>
-    </div>
-</div>
-
-<!-- FLASH MESSAGES -->
-<div style="padding: 0 5vw; margin-top: 1.5rem;">
-    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-    <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
-</div>
-
-<!-- SPLIT LAYOUT: list left, form right -->
+<!-- PAGE HEADER + SPLIT LAYOUT combined so right panel covers full height -->
 <div class="split-layout">
 
-    <!-- LEFT: Driver list -->
+    <!-- LEFT: header + flash + driver list -->
     <div class="split-left">
+
+        <!-- Page header (left column only) -->
+        <div class="page-header reveal" style="border-bottom: 2px solid var(--border);">
+            <div class="page-header-left">
+                <p class="page-eyebrow">Manajemen</p>
+                <h1 class="page-title">Driver</h1>
+            </div>
+        </div>
+
+        <!-- FLASH MESSAGES -->
+        <div style="padding: 1.5rem 5vw 0;">
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
+        </div>
 
         <!-- Empty state -->
         <div th:if="${#lists.isEmpty(drivers)}" class="empty-state reveal">

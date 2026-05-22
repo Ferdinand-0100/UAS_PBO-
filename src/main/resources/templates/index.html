@@ -16,6 +16,14 @@
     <style>
         /* ── Page-specific styles only ── */
 
+        /* Make order section panels semi-transparent so bg shows through */
+        .order-left,
+        .order-right {
+            background: rgba(9, 9, 11, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
         /* Order form layout */
         .order-section {
             display: grid;
