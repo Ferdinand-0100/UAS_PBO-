@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoAja — Masuk</title>
+
+    <!-- Space Grotesk — loaded from Google Fonts, no download needed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ═══════════════════════════════════════
+           DESIGN TOKENS
+        ═══════════════════════════════════════ */
+        :root {
+            --bg:        #09090B;
+            --fg:        #FAFAFA;
+            --muted:     #27272A;
+            --muted-fg:  #A1A1AA;
+            --accent:    #DE3163;
+            --accent-fg: #ffffff;
+            --border:    #3F3F46;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body { height: 100%; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Noise texture */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        ::selection { background: var(--accent); color: var(--accent-fg); }
+
+        /* ═══════════════════════════════════════
+           LAYOUT — split screen
+        ═══════════════════════════════════════ */
+        .login-page {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100vh;
+        }
+
+        /* ── Left: branding + headline ── */
+        .login-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3rem 5vw;
+            border-right: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            text-decoration: none;
+        }
+
+        .login-brand span { color: var(--accent); }
+
+        .login-headline-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-eyebrow {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .login-headline {
+            font-size: clamp(3rem, 7vw, 7rem);
+            font-weight: 700;
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            margin-bottom: 2rem;
+        }
+
+        .login-headline em {
+            font-style: normal;
+            color: var(--accent);
+        }
+
+        .login-tagline {
+            font-size: 1rem;
+            color: var(--muted-fg);
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .login-footer-text {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+        }
+
+        /* ── Right: photo + form overlay ── */
+        .login-right {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-bg-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: grayscale(20%) brightness(0.45);
+        }
+
+        /* Form sits on top of the image */
+        .login-form-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 3.5rem;
+            background: linear-gradient(135deg, rgba(9,9,11,0.7) 0%, rgba(9,9,11,0.3) 100%);
+        }
+
+        .form-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 2.5rem;
+        }
+
+        /* Alert messages */
+        .alert {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 3px solid;
+        }
+
+        .alert-error {
+            background: rgba(222, 49, 99, 0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .alert-success {
+            background: rgba(250, 250, 250, 0.08);
+            border-color: var(--fg);
+            color: var(--fg);
+        }
+
+        /* Form fields */
+        .form-field {
+            border-bottom: 2px solid rgba(63, 63, 70, 0.8);
+            padding: 1.25rem 0;
+            transition: border-color 0.2s;
+        }
+
+        .form-field:focus-within {
+            border-color: var(--accent);
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-field input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--fg);
+            letter-spacing: -0.02em;
+            padding: 0;
+        }
+
+        .form-field input::placeholder {
+            color: rgba(63, 63, 70, 0.9);
+        }
+
+        .form-actions {
+            margin-top: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-login {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-fg);
+            background: var(--accent);
+            border: none;
+            padding: 1rem 2.5rem;
+            cursor: pointer;
+            border-radius: 0;
+            transition: transform 0.2s, opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-login:hover { transform: scale(1.05); opacity: 0.9; }
+        .btn-login:active { transform: scale(0.95); }
+
+        .login-hint {
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            color: var(--muted-fg);
+            line-height: 1.5;
+        }
+
+        /* ═══════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════ */
+        @media (max-width: 768px) {
+            body { overflow: auto; }
+
+            .login-page {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .login-left {
+                padding: 2.5rem 6vw 3rem;
+                border-right: none;
+                border-bottom: 2px solid var(--border);
+                min-height: 55vh;
+            }
+
+            .login-right {
+                min-height: 45vh;
+            }
+
+            .login-form-overlay {
+                padding: 2rem 6vw;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<main class="login-page">
+
+    <!-- ── LEFT: Brand + Headline ── -->
+    <div class="login-left">
+        <a class="login-brand" href="/login">Go<span>Aja</span></a>
+
+        <div class="login-headline-wrap">
+            <p class="login-eyebrow">Transportasi &amp; Pengiriman</p>
+            <h1 class="login-headline">
+                Sampai<br>Lebih<br><em>Cepat.</em>
+            </h1>
+            <p class="login-tagline">
+                GoAja menghubungkan pengguna dengan driver terpercaya untuk layanan transportasi dan pengiriman barang — cepat, aman, dan terlacak.
+            </p>
+        </div>
+
+        <p class="login-footer-text">&copy; 2025 GoAja &mdash; UAS PBO</p>
+    </div>
+
+    <!-- ── RIGHT: Photo + Login Form ── -->
+    <div class="login-right">
+        <!--
+            Image from Unsplash — free to use, no download needed.
+            https://unsplash.com/photos/1558618666-fcd25c85cd64
+        -->
+        <img
+            class="login-bg-img"
+            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&auto=format&fit=crop"
+            alt=""
+            aria-hidden="true"
+        >
+
+        <div class="login-form-overlay">
+            <p class="form-title">Masuk ke Akun Anda</p>
+
+            <!-- Error message -->
+            <div th:if="${param.error}" class="alert alert-error" role="alert">
+                Username atau password salah. Coba lagi.
+            </div>
+
+            <!-- Logout success message -->
+            <div th:if="${param.logout}" class="alert alert-success" role="alert">
+                Anda telah berhasil keluar.
+            </div>
+
+            <form th:action="@{/login}" method="post" novalidate>
+                <div class="form-field">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="user"
+                        autocomplete="username"
+                        required
+                        autofocus
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-login">Masuk</button>
+                    <p class="login-hint">
+                        Username: <strong style="color:var(--fg);">user</strong><br>
+                        Password: lihat console IntelliJ
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+
+</body>
+</html>

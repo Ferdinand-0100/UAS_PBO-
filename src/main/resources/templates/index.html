@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GoAja — Dashboard</title>
+    <!-- Redirect to login if not authenticated is handled by Spring Security -->
 
     <!-- Space Grotesk — loaded from Google Fonts, no download needed -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -145,62 +146,23 @@
         }
 
         /* ═══════════════════════════════════════
-           HERO
+           HERO — styles removed (hero moved to login.html)
         ═══════════════════════════════════════ */
-        .hero {
-            min-height: 90vh;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            border-bottom: 2px solid var(--border);
-        }
 
-        .hero-left {
-            padding: 8rem 5vw 8rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            border-right: 2px solid var(--border);
-        }
+        /* ═══════════════════════════════════════
+           MARQUEE — styles removed (marquee moved to login.html)
+        ═══════════════════════════════════════ */
 
-        .hero-eyebrow {
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-headline {
-            font-size: clamp(3rem, 7vw, 7rem);
-            font-weight: 700;
-            line-height: 0.9;
-            letter-spacing: -0.04em;
-            text-transform: uppercase;
-            color: var(--fg);
-            margin-bottom: 2rem;
-        }
-
-        .hero-headline em {
-            font-style: normal;
-            color: var(--accent);
-        }
-
-        .hero-body {
-            font-size: 1.1rem;
-            color: var(--muted-fg);
-            max-width: 480px;
-            line-height: 1.6;
-            margin-bottom: 3rem;
-        }
-
+        /* ═══════════════════════════════════════
+           BUTTONS (used in order form & services)
+        ═══════════════════════════════════════ */
         .btn-primary-accent {
             display: inline-block;
             font-size: 0.85rem;
             font-weight: 700;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: var(--accent-fg);
+            color: #ffffff;
             background: var(--accent);
             border: none;
             padding: 1rem 2.5rem;
@@ -210,7 +172,7 @@
             transition: transform 0.2s, opacity 0.2s;
         }
 
-        .btn-primary-accent:hover { transform: scale(1.05); opacity: 0.9; color: var(--accent-fg); }
+        .btn-primary-accent:hover { transform: scale(1.05); opacity: 0.9; color: #ffffff; }
         .btn-primary-accent:active { transform: scale(0.95); }
 
         .btn-outline-accent {
@@ -233,83 +195,6 @@
             background: var(--fg);
             color: var(--bg);
             border-color: var(--fg);
-        }
-
-        .hero-right {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            filter: grayscale(20%);
-        }
-
-        .hero-img-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to right, var(--bg) 0%, transparent 30%);
-        }
-
-        /* ═══════════════════════════════════════
-           MARQUEE (pure CSS — no library needed)
-        ═══════════════════════════════════════ */
-        .marquee-section {
-            background: var(--accent);
-            border-top: 2px solid var(--border);
-            border-bottom: 2px solid var(--border);
-            overflow: hidden;
-            padding: 1.2rem 0;
-        }
-
-        .marquee-track {
-            display: flex;
-            gap: 0;
-            width: max-content;
-            animation: marquee-scroll 28s linear infinite;
-        }
-
-        @keyframes marquee-scroll {
-            from { transform: translateX(0); }
-            to   { transform: translateX(-50%); }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .marquee-track { animation: none; }
-        }
-
-        .marquee-item {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 0 3rem;
-            white-space: nowrap;
-        }
-
-        .marquee-num {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -0.04em;
-            color: var(--accent-fg);
-        }
-
-        .marquee-label {
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: var(--accent-fg);
-            opacity: 0.7;
-        }
-
-        .marquee-sep {
-            font-size: 1.5rem;
-            font-weight: 300;
-            color: var(--accent-fg);
-            opacity: 0.3;
         }
 
         /* ═══════════════════════════════════════
@@ -699,10 +584,6 @@
                 z-index: 99;
             }
 
-            .hero { grid-template-columns: 1fr; min-height: auto; }
-            .hero-left { padding: 4rem 5vw; border-right: none; border-bottom: 2px solid var(--border); }
-            .hero-right { height: 280px; }
-            .hero-img-overlay { background: linear-gradient(to top, var(--bg) 0%, transparent 50%); }
 
             .order-section { grid-template-columns: 1fr; }
             .order-left { padding: 4rem 5vw 2rem; border-right: none; border-bottom: 2px solid var(--border); }
@@ -748,60 +629,6 @@
         <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
     </div>
 </nav>
-
-<!-- ══════════════════════════════════════
-     HERO
-     Image: Unsplash photo of city traffic / motorcycle courier
-     No download needed — loaded directly from Unsplash CDN
-══════════════════════════════════════ -->
-<section class="hero" aria-label="Hero section">
-    <div class="hero-left reveal">
-        <p class="hero-eyebrow">Transportasi &amp; Pengiriman</p>
-        <h1 class="hero-headline">
-            Sampai<br>Lebih<br><em>Cepat.</em>
-        </h1>
-        <p class="hero-body">
-            GoAja menghubungkan pengguna dengan driver terpercaya untuk layanan transportasi dan pengiriman barang — cepat, aman, dan terlacak.
-        </p>
-        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-            <a href="#order-form" class="btn-primary-accent">Pesan Sekarang</a>
-            <a href="/layanan" class="btn-outline-accent">Lihat Layanan</a>
-        </div>
-    </div>
-    <div class="hero-right">
-        <!--
-            Image from Unsplash (free to use, no download needed).
-            Source: https://unsplash.com/photos/motorcycle-courier-city
-            If this image fails to load, replace the src with any motorcycle/delivery photo URL.
-        -->
-        <img
-            class="hero-img"
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&auto=format&fit=crop"
-            alt="Kurir motor di jalanan kota"
-            loading="eager"
-        >
-        <div class="hero-img-overlay" aria-hidden="true"></div>
-    </div>
-</section>
-
-<!-- ══════════════════════════════════════
-     STATS MARQUEE
-══════════════════════════════════════ -->
-<div class="marquee-section" aria-label="Platform statistics" role="region">
-    <div class="marquee-track" aria-hidden="true">
-        <!-- Duplicated for seamless infinite loop -->
-        <div class="marquee-item"><span class="marquee-num">1,240</span><span class="marquee-label">Total Pesanan</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">320</span><span class="marquee-label">Driver Aktif</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">5,800</span><span class="marquee-label">Pengguna</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">4.9</span><span class="marquee-label">Rating Rata-rata</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">98%</span><span class="marquee-label">Kepuasan</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">1,240</span><span class="marquee-label">Total Pesanan</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">320</span><span class="marquee-label">Driver Aktif</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">5,800</span><span class="marquee-label">Pengguna</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">4.9</span><span class="marquee-label">Rating Rata-rata</span><span class="marquee-sep">/</span></div>
-        <div class="marquee-item"><span class="marquee-num">98%</span><span class="marquee-label">Kepuasan</span><span class="marquee-sep">/</span></div>
-    </div>
-</div>
 
 <!-- ══════════════════════════════════════
      ORDER FORM
