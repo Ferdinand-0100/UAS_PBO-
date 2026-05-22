@@ -1,151 +1,1026 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>GoAja</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoAja — Dashboard</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Space Grotesk — loaded from Google Fonts, no download needed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <style>
+        /* ═══════════════════════════════════════
+           DESIGN TOKENS — Kinetic Typography
+        ═══════════════════════════════════════ */
+        :root {
+            --bg:        #09090B;
+            --fg:        #FAFAFA;
+            --muted:     #27272A;
+            --muted-fg:  #A1A1AA;
+            --accent:    #DE3163;
+            --accent-fg: #000000;
+            --border:    #3F3F46;
+        }
+
+        /* ═══════════════════════════════════════
+           BASE RESET & TYPOGRAPHY
+        ═══════════════════════════════════════ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        ::selection { background: var(--accent); color: var(--accent-fg); }
+
+        /* ═══════════════════════════════════════
+           NOISE TEXTURE OVERLAY
+        ═══════════════════════════════════════ */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* ═══════════════════════════════════════
+           NAVBAR
+        ═══════════════════════════════════════ */
+        .site-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            padding: 0 5vw;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            text-decoration: none;
+        }
+
+        .nav-brand span { color: var(--accent); }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active { color: var(--fg); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-user {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+        }
+
+        .btn-logout {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent-fg);
+            background: var(--accent);
+            border: none;
+            padding: 0.5rem 1.25rem;
+            cursor: pointer;
+            border-radius: 0;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+
+        .btn-logout:hover { opacity: 0.85; transform: scale(1.03); }
+        .btn-logout:active { transform: scale(0.97); }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: 2px solid var(--border);
+            color: var(--fg);
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        /* ═══════════════════════════════════════
+           HERO
+        ═══════════════════════════════════════ */
+        .hero {
+            min-height: 90vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .hero-left {
+            padding: 8rem 5vw 8rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 2px solid var(--border);
+        }
+
+        .hero-eyebrow {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-headline {
+            font-size: clamp(3rem, 7vw, 7rem);
+            font-weight: 700;
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            margin-bottom: 2rem;
+        }
+
+        .hero-headline em {
+            font-style: normal;
+            color: var(--accent);
+        }
+
+        .hero-body {
+            font-size: 1.1rem;
+            color: var(--muted-fg);
+            max-width: 480px;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+        }
+
+        .btn-primary-accent {
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-fg);
+            background: var(--accent);
+            border: none;
+            padding: 1rem 2.5rem;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 0;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn-primary-accent:hover { transform: scale(1.05); opacity: 0.9; color: var(--accent-fg); }
+        .btn-primary-accent:active { transform: scale(0.95); }
+
+        .btn-outline-accent {
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--fg);
+            background: transparent;
+            border: 2px solid var(--border);
+            padding: 1rem 2.5rem;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 0;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .btn-outline-accent:hover {
+            background: var(--fg);
+            color: var(--bg);
+            border-color: var(--fg);
+        }
+
+        .hero-right {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: grayscale(20%);
+        }
+
+        .hero-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, var(--bg) 0%, transparent 30%);
+        }
+
+        /* ═══════════════════════════════════════
+           MARQUEE (pure CSS — no library needed)
+        ═══════════════════════════════════════ */
+        .marquee-section {
+            background: var(--accent);
+            border-top: 2px solid var(--border);
+            border-bottom: 2px solid var(--border);
+            overflow: hidden;
+            padding: 1.2rem 0;
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 0;
+            width: max-content;
+            animation: marquee-scroll 28s linear infinite;
+        }
+
+        @keyframes marquee-scroll {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .marquee-track { animation: none; }
+        }
+
+        .marquee-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0 3rem;
+            white-space: nowrap;
+        }
+
+        .marquee-num {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: var(--accent-fg);
+        }
+
+        .marquee-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent-fg);
+            opacity: 0.7;
+        }
+
+        .marquee-sep {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--accent-fg);
+            opacity: 0.3;
+        }
+
+        /* ═══════════════════════════════════════
+           ORDER FORM SECTION
+        ═══════════════════════════════════════ */
+        .order-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .order-left {
+            padding: 6rem 5vw;
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .section-heading {
+            font-size: clamp(2.5rem, 5vw, 5rem);
+            font-weight: 700;
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-body {
+            font-size: 1rem;
+            color: var(--muted-fg);
+            line-height: 1.7;
+            max-width: 420px;
+        }
+
+        .order-right {
+            padding: 6rem 5vw;
+        }
+
+        .form-field {
+            margin-bottom: 0;
+            border-bottom: 2px solid var(--border);
+            padding: 1.5rem 0;
+            transition: border-color 0.2s;
+        }
+
+        .form-field:last-of-type { border-bottom: none; }
+        .form-field:focus-within { border-color: var(--accent); }
+
+        .form-field label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-field input,
+        .form-field select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--fg);
+            letter-spacing: -0.02em;
+            padding: 0;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .form-field input::placeholder { color: var(--muted); }
+
+        .form-field select option {
+            background: var(--bg);
+            color: var(--fg);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .form-row .form-field:first-child {
+            border-right: 2px solid var(--border);
+            padding-right: 2rem;
+        }
+
+        .form-row .form-field:last-child {
+            padding-left: 2rem;
+        }
+
+        .form-submit-row {
+            margin-top: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        /* ═══════════════════════════════════════
+           SERVICES SECTION
+        ═══════════════════════════════════════ */
+        .services-section {
+            border-bottom: 2px solid var(--border);
+        }
+
+        .services-header {
+            padding: 5rem 5vw 3rem;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .service-card {
+            padding: 3rem 2.5rem;
+            border-right: 2px solid var(--border);
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card:last-child { border-right: none; }
+
+        .service-card:hover {
+            background: var(--accent);
+        }
+
+        .service-card:hover .service-title,
+        .service-card:hover .service-desc,
+        .service-card:hover .service-tag,
+        .service-card:hover .service-num { color: var(--accent-fg); }
+
+        .service-card:hover .service-img-wrap img { filter: grayscale(0%); }
+
+        .service-img-wrap {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            border: 2px solid var(--border);
+        }
+
+        .service-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: grayscale(40%);
+            transition: filter 0.3s, transform 0.3s;
+        }
+
+        .service-card:hover .service-img-wrap img { transform: scale(1.05); }
+
+        .service-num {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-bottom: 1rem;
+            transition: color 0.3s;
+        }
+
+        .service-title {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            margin-bottom: 1rem;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+
+        .service-desc {
+            font-size: 0.9rem;
+            color: var(--muted-fg);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            transition: color 0.3s;
+        }
+
+        .service-tag {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.75rem;
+            display: inline-block;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        .service-card:hover .service-tag { border-color: var(--accent-fg); }
+
+        /* ═══════════════════════════════════════
+           STATS SECTION (big numbers)
+        ═══════════════════════════════════════ */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .stat-block {
+            padding: 4rem 2.5rem;
+            border-right: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-block:last-child { border-right: none; }
+
+        .stat-bg-num {
+            position: absolute;
+            bottom: -1rem;
+            right: -0.5rem;
+            font-size: 8rem;
+            font-weight: 700;
+            color: var(--muted);
+            line-height: 1;
+            letter-spacing: -0.06em;
+            pointer-events: none;
+            user-select: none;
+            aria-hidden: true;
+        }
+
+        .stat-value {
+            font-size: clamp(2.5rem, 4vw, 4rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: var(--fg);
+            line-height: 1;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value span { color: var(--accent); }
+
+        .stat-desc {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+        }
+
+        /* ═══════════════════════════════════════
+           FOOTER
+        ═══════════════════════════════════════ */
+        .site-footer {
+            padding: 5rem 5vw 3rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 4rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .footer-brand {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            text-transform: uppercase;
+            color: var(--fg);
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand span { color: var(--accent); }
+
+        .footer-tagline {
+            font-size: 0.9rem;
+            color: var(--muted-fg);
+            line-height: 1.6;
+            max-width: 320px;
+        }
+
+        .footer-col-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--fg);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .footer-links a {
+            font-size: 0.85rem;
+            color: var(--muted-fg);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--accent); }
+
+        .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-copy {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+        }
+
+        /* ═══════════════════════════════════════
+           SCROLL REVEAL
+        ═══════════════════════════════════════ */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1; transform: none; transition: none; }
+        }
+
+        /* ═══════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .stats-section { grid-template-columns: repeat(2, 1fr); }
+            .stat-block:nth-child(2) { border-right: none; }
+            .stat-block:nth-child(3) { border-top: 2px solid var(--border); }
+            .stat-block:nth-child(4) { border-top: 2px solid var(--border); border-right: none; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-toggle { display: block; }
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: var(--bg);
+                border-bottom: 1px solid var(--border);
+                padding: 1.5rem 5vw;
+                gap: 1.25rem;
+                z-index: 99;
+            }
+
+            .hero { grid-template-columns: 1fr; min-height: auto; }
+            .hero-left { padding: 4rem 5vw; border-right: none; border-bottom: 2px solid var(--border); }
+            .hero-right { height: 280px; }
+            .hero-img-overlay { background: linear-gradient(to top, var(--bg) 0%, transparent 50%); }
+
+            .order-section { grid-template-columns: 1fr; }
+            .order-left { padding: 4rem 5vw 2rem; border-right: none; border-bottom: 2px solid var(--border); }
+            .order-right { padding: 3rem 5vw 4rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-row .form-field:first-child { border-right: none; padding-right: 0; }
+            .form-row .form-field:last-child { padding-left: 0; }
+
+            .services-grid { grid-template-columns: 1fr; }
+            .service-card { border-right: none; border-bottom: 2px solid var(--border); }
+            .service-card:last-child { border-bottom: none; }
+            .services-header { flex-direction: column; align-items: flex-start; }
+
+            .stats-section { grid-template-columns: 1fr 1fr; }
+
+            .footer-top { grid-template-columns: 1fr; gap: 2.5rem; }
+            .footer-bottom { flex-direction: column; gap: 1rem; align-items: flex-start; }
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-success shadow">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#">
-            GoAja 🚗
-        </a>
+<!-- ══════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════ -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-brand" href="/">Go<span>Aja</span></a>
 
-        <div>
-            <button class="btn btn-light me-2">Login</button>
-            <button class="btn btn-dark">Register</button>
-        </div>
+    <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="/" class="active" aria-current="page">Beranda</a></li>
+        <li><a href="/orders">Pesanan</a></li>
+        <li><a href="/drivers">Driver</a></li>
+        <li><a href="/layanan">Layanan</a></li>
+    </ul>
+
+    <div class="nav-right">
+        <span class="nav-user" aria-label="Logged in as">
+            <span sec:authentication="name">User</span>
+        </span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Keluar</button>
+        </form>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
     </div>
 </nav>
 
-<!-- Hero Section -->
-<section class="container py-5">
-    <div class="row align-items-center">
+<!-- ══════════════════════════════════════
+     HERO
+     Image: Unsplash photo of city traffic / motorcycle courier
+     No download needed — loaded directly from Unsplash CDN
+══════════════════════════════════════ -->
+<section class="hero" aria-label="Hero section">
+    <div class="hero-left reveal">
+        <p class="hero-eyebrow">Transportasi &amp; Pengiriman</p>
+        <h1 class="hero-headline">
+            Sampai<br>Lebih<br><em>Cepat.</em>
+        </h1>
+        <p class="hero-body">
+            GoAja menghubungkan pengguna dengan driver terpercaya untuk layanan transportasi dan pengiriman barang — cepat, aman, dan terlacak.
+        </p>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <a href="#order-form" class="btn-primary-accent">Pesan Sekarang</a>
+            <a href="/layanan" class="btn-outline-accent">Lihat Layanan</a>
+        </div>
+    </div>
+    <div class="hero-right">
+        <!--
+            Image from Unsplash (free to use, no download needed).
+            Source: https://unsplash.com/photos/motorcycle-courier-city
+            If this image fails to load, replace the src with any motorcycle/delivery photo URL.
+        -->
+        <img
+            class="hero-img"
+            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&auto=format&fit=crop"
+            alt="Kurir motor di jalanan kota"
+            loading="eager"
+        >
+        <div class="hero-img-overlay" aria-hidden="true"></div>
+    </div>
+</section>
 
-        <div class="col-md-6">
-            <h1 class="display-4 fw-bold">
-                Transport & Delivery Jadi Lebih Mudah
-            </h1>
+<!-- ══════════════════════════════════════
+     STATS MARQUEE
+══════════════════════════════════════ -->
+<div class="marquee-section" aria-label="Platform statistics" role="region">
+    <div class="marquee-track" aria-hidden="true">
+        <!-- Duplicated for seamless infinite loop -->
+        <div class="marquee-item"><span class="marquee-num">1,240</span><span class="marquee-label">Total Pesanan</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">320</span><span class="marquee-label">Driver Aktif</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">5,800</span><span class="marquee-label">Pengguna</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">4.9</span><span class="marquee-label">Rating Rata-rata</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">98%</span><span class="marquee-label">Kepuasan</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">1,240</span><span class="marquee-label">Total Pesanan</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">320</span><span class="marquee-label">Driver Aktif</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">5,800</span><span class="marquee-label">Pengguna</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">4.9</span><span class="marquee-label">Rating Rata-rata</span><span class="marquee-sep">/</span></div>
+        <div class="marquee-item"><span class="marquee-num">98%</span><span class="marquee-label">Kepuasan</span><span class="marquee-sep">/</span></div>
+    </div>
+</div>
 
-            <p class="lead text-muted mt-3">
-                GoAja membantu pengguna memesan layanan transportasi dan pengiriman barang dengan cepat dan aman.
+<!-- ══════════════════════════════════════
+     ORDER FORM
+══════════════════════════════════════ -->
+<section class="order-section" id="order-form" aria-label="Buat pesanan baru">
+    <div class="order-left reveal">
+        <p class="section-label">Mulai Perjalanan</p>
+        <h2 class="section-heading">Buat<br>Pesanan<br>Baru</h2>
+        <p class="section-body">
+            Isi detail perjalanan atau pengiriman kamu. Pilih layanan, tentukan jarak, dan kami akan menghitung estimasi harga secara otomatis.
+        </p>
+    </div>
+    <div class="order-right reveal">
+        <form id="orderForm" novalidate>
+            <div class="form-field">
+                <label for="lokasiJemput">Lokasi Penjemputan</label>
+                <input type="text" id="lokasiJemput" name="lokasiJemput"
+                       placeholder="Jl. Sudirman, Jakarta" autocomplete="street-address" required>
+            </div>
+            <div class="form-field">
+                <label for="lokasiTujuan">Tujuan</label>
+                <input type="text" id="lokasiTujuan" name="lokasiTujuan"
+                       placeholder="Bandara Soekarno-Hatta" required>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="jenisLayanan">Jenis Layanan</label>
+                    <select id="jenisLayanan" name="layanan" required>
+                        <option value="">Pilih...</option>
+                        <option value="1">GoRide — Transport</option>
+                        <option value="2">GoSend — Delivery</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="jarak">Jarak (km)</label>
+                    <input type="number" id="jarak" name="jarak"
+                           placeholder="0.0" min="0" step="0.1">
+                </div>
+            </div>
+            <div class="form-field">
+                <label for="estimasiHarga">Estimasi Harga</label>
+                <input type="text" id="estimasiHarga" name="estimasiHarga"
+                       placeholder="Rp 0" readonly aria-readonly="true">
+            </div>
+            <div class="form-submit-row">
+                <button type="submit" class="btn-primary-accent">Buat Pesanan</button>
+                <button type="reset" class="btn-outline-accent">Reset</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SERVICES
+     Images: Unsplash CDN — no download needed
+══════════════════════════════════════ -->
+<section class="services-section" aria-label="Layanan kami">
+    <div class="services-header">
+        <div>
+            <p class="section-label">Platform</p>
+            <h2 class="section-heading" style="margin-bottom:0;">Layanan<br>Kami</h2>
+        </div>
+        <p class="section-body" style="max-width:360px;">
+            Dua layanan utama yang dirancang untuk memenuhi kebutuhan mobilitas dan pengiriman kamu sehari-hari.
+        </p>
+    </div>
+    <div class="services-grid">
+
+        <article class="service-card reveal">
+            <div class="service-img-wrap">
+                <img
+                    src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=75&auto=format&fit=crop"
+                    alt="Motor di jalan kota untuk layanan GoRide"
+                    loading="lazy"
+                >
+            </div>
+            <p class="service-num">01 / Transportasi</p>
+            <h3 class="service-title">GoRide</h3>
+            <p class="service-desc">Layanan transportasi motor cepat dan aman. Jangkau tujuanmu tanpa hambatan, kapan saja.</p>
+            <span class="service-tag">Cepat &amp; Aman</span>
+        </article>
+
+        <article class="service-card reveal">
+            <div class="service-img-wrap">
+                <img
+                    src="https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&q=75&auto=format&fit=crop"
+                    alt="Paket pengiriman untuk layanan GoSend"
+                    loading="lazy"
+                >
+            </div>
+            <p class="service-num">02 / Pengiriman</p>
+            <h3 class="service-title">GoSend</h3>
+            <p class="service-desc">Kirim barang dengan mudah dan terlacak secara real-time. Dari dokumen hingga paket besar.</p>
+            <span class="service-tag">Real-time Tracking</span>
+        </article>
+
+        <article class="service-card reveal">
+            <div class="service-img-wrap">
+                <img
+                    src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=600&q=75&auto=format&fit=crop"
+                    alt="Keamanan digital dan enkripsi data"
+                    loading="lazy"
+                >
+            </div>
+            <p class="service-num">03 / Keamanan</p>
+            <h3 class="service-title">Aman</h3>
+            <p class="service-desc">Sistem autentikasi berbasis Spring Security. Data dan transaksi kamu terlindungi sepenuhnya.</p>
+            <span class="service-tag">Spring Security</span>
+        </article>
+
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     BIG STATS
+══════════════════════════════════════ -->
+<section class="stats-section" aria-label="Statistik platform">
+    <div class="stat-block reveal">
+        <div class="stat-bg-num" aria-hidden="true">1K</div>
+        <div class="stat-value">1,240<span>+</span></div>
+        <p class="stat-desc">Total Pesanan</p>
+    </div>
+    <div class="stat-block reveal">
+        <div class="stat-bg-num" aria-hidden="true">320</div>
+        <div class="stat-value">320<span>+</span></div>
+        <p class="stat-desc">Driver Aktif</p>
+    </div>
+    <div class="stat-block reveal">
+        <div class="stat-bg-num" aria-hidden="true">5K</div>
+        <div class="stat-value">5,800<span>+</span></div>
+        <p class="stat-desc">Pengguna Terdaftar</p>
+    </div>
+    <div class="stat-block reveal">
+        <div class="stat-bg-num" aria-hidden="true">4.9</div>
+        <div class="stat-value">4.9<span>/5</span></div>
+        <p class="stat-desc">Rating Rata-rata</p>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FOOTER
+══════════════════════════════════════ -->
+<footer class="site-footer" role="contentinfo">
+    <div class="footer-top">
+        <div>
+            <div class="footer-brand">Go<span>Aja</span></div>
+            <p class="footer-tagline">
+                Sistem Transportasi &amp; Delivery berbasis Spring Boot. Cepat, aman, dan terpercaya untuk kebutuhan mobilitas sehari-hari.
             </p>
-
-            <button class="btn btn-success btn-lg mt-3">
-                Pesan Sekarang
-            </button>
         </div>
-
-        <div class="col-md-6">
-            <div class="card shadow-lg border-0 rounded-4 p-4">
-                <h3 class="fw-bold mb-4">Form Pemesanan</h3>
-
-                <form>
-
-                    <div class="mb-3">
-                        <label class="form-label">Lokasi Penjemputan</label>
-                        <input type="text" class="form-control">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Tujuan</label>
-                        <input type="text" class="form-control">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Jenis Layanan</label>
-
-                        <select class="form-select">
-                            <option>Transport</option>
-                            <option>Delivery</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-success w-100">
-                        Buat Order
-                    </button>
-
-                </form>
-            </div>
+        <div>
+            <p class="footer-col-title">Layanan</p>
+            <ul class="footer-links">
+                <li><a href="/layanan">GoRide — Transport</a></li>
+                <li><a href="/layanan">GoSend — Delivery</a></li>
+                <li><a href="/orders">Riwayat Pesanan</a></li>
+                <li><a href="/drivers">Daftar Driver</a></li>
+            </ul>
         </div>
-
+        <div>
+            <p class="footer-col-title">Teknologi</p>
+            <ul class="footer-links">
+                <li><a href="https://spring.io/projects/spring-boot" target="_blank" rel="noopener">Spring Boot</a></li>
+                <li><a href="https://spring.io/projects/spring-security" target="_blank" rel="noopener">Spring Security</a></li>
+                <li><a href="https://www.thymeleaf.org" target="_blank" rel="noopener">Thymeleaf</a></li>
+                <li><a href="https://www.h2database.com" target="_blank" rel="noopener">H2 Database</a></li>
+            </ul>
+        </div>
     </div>
-</section>
-
-<!-- Services -->
-<section class="container py-5">
-
-    <h2 class="text-center fw-bold mb-5">
-        Layanan Kami
-    </h2>
-
-    <div class="row g-4">
-
-        <div class="col-md-4">
-            <div class="card border-0 shadow-lg rounded-4 p-4 h-100">
-
-                <h1>🏍️</h1>
-
-                <h3 class="fw-bold mt-3">
-                    GoRide
-                </h3>
-
-                <p class="text-muted">
-                    Layanan transportasi cepat dan aman.
-                </p>
-
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card border-0 shadow-lg rounded-4 p-4 h-100">
-
-                <h1>📦</h1>
-
-                <h3 class="fw-bold mt-3">
-                    GoSend
-                </h3>
-
-                <p class="text-muted">
-                    Antar barang dengan mudah dan cepat.
-                </p>
-
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card border-0 shadow-lg rounded-4 p-4 h-100">
-
-                <h1>🔒</h1>
-
-                <h3 class="fw-bold mt-3">
-                    Security
-                </h3>
-
-                <p class="text-muted">
-                    Login aman menggunakan Spring Security.
-                </p>
-
-            </div>
-        </div>
-
+    <div class="footer-bottom">
+        <p class="footer-copy">&copy; 2025 GoAja &mdash; UAS Pemrograman Berorientasi Objek</p>
+        <p class="footer-copy">Dibangun dengan Spring Boot &amp; Thymeleaf</p>
     </div>
-
-</section>
-
-<!-- Footer -->
-<footer class="bg-dark text-white text-center py-4 mt-5">
-    <h5>GoAja 🚗</h5>
-    <p class="mb-0">
-        Sistem Transportasi & Delivery berbasis Spring Boot
-    </p>
 </footer>
+
+<!-- ══════════════════════════════════════
+     SCRIPTS — vanilla JS only, no library needed
+══════════════════════════════════════ -->
+<script>
+    // Mobile nav toggle
+    const toggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    toggle.addEventListener('click', () => {
+        const open = navLinks.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open);
+    });
+
+    // Scroll reveal via IntersectionObserver
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
+
+    // Estimate price on jarak/layanan change
+    const jarakInput  = document.getElementById('jarak');
+    const layananSel  = document.getElementById('jenisLayanan');
+    const hargaInput  = document.getElementById('estimasiHarga');
+
+    // Tariff per km (matches Layanan model tarifPerKm concept)
+    const tariffs = { '1': 3000, '2': 5000 };
+
+    function updateEstimate() {
+        const km     = parseFloat(jarakInput.value) || 0;
+        const tariff = tariffs[layananSel.value] || 0;
+        const total  = km * tariff;
+        hargaInput.value = total > 0
+            ? 'Rp ' + total.toLocaleString('id-ID')
+            : 'Rp 0';
+    }
+
+    jarakInput.addEventListener('input', updateEstimate);
+    layananSel.addEventListener('change', updateEstimate);
+</script>
 
 </body>
 </html>
