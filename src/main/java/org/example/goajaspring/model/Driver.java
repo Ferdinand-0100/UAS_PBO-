@@ -42,4 +42,9 @@ public class Driver extends User{
     public void setAvailable(boolean available) {
         this.available = available;
     }
+
+    @Override
+    public String getInfo() {
+        return "Driver: " + getNama() + " | Kendaraan: " + kendaraan + " | Plat: " + platNomor;
+    }
 }
