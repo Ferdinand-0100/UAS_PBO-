@@ -18,6 +18,9 @@ public class DriverServiceImpl implements DriverService{
 
     @Override
     public Driver saveDriver(Driver driver) {
+        if (driver.getPlatNomor() != null && driverRepository.existsByPlatNomor(driver.getPlatNomor())) {
+            throw new RuntimeException("Plat nomor sudah terdaftar");
+        }
         return driverRepository.save(driver);
     }
 

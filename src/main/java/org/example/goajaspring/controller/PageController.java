@@ -11,14 +11,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import org.springframework.security.core.Authentication;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 
-/**
- * Handles all HTML page rendering.
- * The existing @RestController classes remain for JSON/API access.
- * This controller owns the browser-facing UI routes.
- */
 @Controller
 public class PageController {
 
@@ -37,29 +34,63 @@ public class PageController {
         this.userService   = userService;
     }
 
-    /* ══════════════════════════════════════
-       DASHBOARD — GET /
-    ══════════════════════════════════════ */
+    /* DASHBOARD — GET */
     @GetMapping("/")
-    public String dashboard(Model model) {
+    public String dashboard(Model model, Authentication authentication) {
         model.addAttribute("layananList", layananService.getAllLayanan());
         model.addAttribute("orderCount",  orderService.getAllOrders().size());
         model.addAttribute("driverCount", driverService.getAllDrivers().size());
+
+        // Determine role for template in a null-safe way
+        String currentRole = "USER";
+        if (authentication != null) {
+            var authorities = authentication.getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                // get first authority string, e.g. "ROLE_ADMIN"
+                String full = authorities.iterator().next().getAuthority();
+                if (full != null) {
+                    if (full.startsWith("ROLE_")) {
+                        currentRole = full.substring(5);
+                    } else {
+                        currentRole = full;
+                    }
+                }
+            }
+        }
+        model.addAttribute("currentRole", currentRole);
+
+        // build tariff map for JS (layananId -> tarifPerKm)
+        Map<Long, Double> tariffMap = new HashMap<>();
+        for (Layanan l : layananService.getAllLayanan()) {
+            if (l.getId() != null) {
+                tariffMap.put(l.getId(), l.getTarifPerKm());
+            }
+        }
+        model.addAttribute("tariffMap", tariffMap);
+
         return "index";
     }
 
-    /* ══════════════════════════════════════
-       ORDERS — GET /orders
-    ══════════════════════════════════════ */
+    /* ORDERS — GET /orders */
     @GetMapping("/orders")
-    public String orders(Model model) {
+    public String orders(Model model, Authentication authentication) {
         model.addAttribute("orders", orderService.getAllOrders());
+
+        String currentRole = "USER";
+        if (authentication != null) {
+            var authorities = authentication.getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                String full = authorities.iterator().next().getAuthority();
+                if (full != null) {
+                    currentRole = full.startsWith("ROLE_") ? full.substring(5) : full;
+                }
+            }
+        }
+        model.addAttribute("currentRole", currentRole);
         return "orders";
     }
 
-    /* ══════════════════════════════════════
-       ACCEPT ORDER — POST /orders/{id}/accept/{driverId}
-    ══════════════════════════════════════ */
+    /* ACCEPT ORDER — POST /orders/{id}/accept/{driverId} */
     @PostMapping("/orders/{orderId}/accept/{driverId}")
     public String acceptOrder(@PathVariable Long orderId,
                               @PathVariable Long driverId,
@@ -73,19 +104,27 @@ public class PageController {
         return "redirect:/orders";
     }
 
-    /* ══════════════════════════════════════
-       DRIVERS — GET /drivers
-    ══════════════════════════════════════ */
+    /* DRIVERS — GET /drivers */
     @GetMapping("/drivers")
-    public String drivers(Model model) {
+    public String drivers(Model model, Authentication authentication) {
         model.addAttribute("drivers", driverService.getAllDrivers());
         model.addAttribute("newDriver", new Driver());
+
+        String currentRole = "USER";
+        if (authentication != null) {
+            var authorities = authentication.getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                String full = authorities.iterator().next().getAuthority();
+                if (full != null) {
+                    currentRole = full.startsWith("ROLE_") ? full.substring(5) : full;
+                }
+            }
+        }
+        model.addAttribute("currentRole", currentRole);
         return "drivers";
     }
 
-    /* ══════════════════════════════════════
-       ADD DRIVER — POST /drivers
-    ══════════════════════════════════════ */
+    /* ADD DRIVER — POST /drivers */
     @PostMapping("/drivers")
     public String addDriver(@ModelAttribute Driver driver,
                             RedirectAttributes ra) {
@@ -96,19 +135,27 @@ public class PageController {
         return "redirect:/drivers";
     }
 
-    /* ══════════════════════════════════════
-       LAYANAN — GET /layanan
-    ══════════════════════════════════════ */
+    /* LAYANAN — GET /layanan */
     @GetMapping("/layanan")
-    public String layanan(Model model) {
+    public String layanan(Model model, Authentication authentication) {
         model.addAttribute("layananList", layananService.getAllLayanan());
         model.addAttribute("newLayanan", new Layanan());
+
+        String currentRole = "USER";
+        if (authentication != null) {
+            var authorities = authentication.getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                String full = authorities.iterator().next().getAuthority();
+                if (full != null) {
+                    currentRole = full.startsWith("ROLE_") ? full.substring(5) : full;
+                }
+            }
+        }
+        model.addAttribute("currentRole", currentRole);
         return "layanan";
     }
 
-    /* ══════════════════════════════════════
-       ADD LAYANAN — POST /layanan
-    ══════════════════════════════════════ */
+    /* ADD LAYANAN — POST /layanan */
     @PostMapping("/layanan")
     public String addLayanan(@ModelAttribute Layanan layanan,
                              RedirectAttributes ra) {
@@ -117,16 +164,15 @@ public class PageController {
         return "redirect:/layanan";
     }
 
-    /* ══════════════════════════════════════
-       SUBMIT ORDER — POST /order/submit
-       (from the dashboard form)
-    ══════════════════════════════════════ */
+    /* SUBMIT ORDER — POST /order/submit (from the dashboard form)*/
     @PostMapping("/order/submit")
     public String submitOrder(@RequestParam String lokasiJemput,
                               @RequestParam String lokasiTujuan,
                               @RequestParam Long layananId,
                               @RequestParam double jarak,
-                              RedirectAttributes ra) {
+                              RedirectAttributes ra,
+                              Authentication authentication) {
+
         try {
             List<Layanan> layananList = layananService.getAllLayanan();
             Layanan layanan = layananList.stream()
@@ -145,11 +191,22 @@ public class PageController {
                     layanan
             );
 
+            if (authentication != null) {
+                userService.findByEmail(authentication.getName()).ifPresent(order::setUser);
+            }
+
             orderService.saveOrder(order);
             ra.addFlashAttribute("success", "Pesanan berhasil dibuat! Status: MENUNGGU.");
         } catch (RuntimeException e) {
             ra.addFlashAttribute("error", "Gagal membuat pesanan: " + e.getMessage());
         }
         return "redirect:/";
+
+    }
+
+    @GetMapping("/track/{orderId}")
+    public String trackPage(@PathVariable Long orderId, Model model) {
+        model.addAttribute("orderId", orderId);
+        return "track";
     }
 }

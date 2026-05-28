@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Daftar — GoAja</title>
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
+</head>
+<body>
+<main style="max-width:480px;margin:3rem auto;padding:1rem;">
+    <h1>Daftar Akun Baru</h1>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <form th:action="@{/signup}" method="post">
+        <div class="form-field">
+            <label>Nama</label>
+            <input type="text" name="nama" th:value="${user.nama}" required>
+        </div>
+        <div class="form-field">
+            <label>Email</label>
+            <input type="email" name="email" th:value="${user.email}" required>
+        </div>
+        <div class="form-field">
+            <label>Password</label>
+            <input type="password" name="password" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Daftar</button>
+            <a href="/login">Sudah punya akun? Masuk</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

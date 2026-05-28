@@ -13,26 +13,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared.css}">
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-
     <style>
-        /* ── Page-specific styles only ── */
-
-        /* Make order section panels semi-transparent so bg shows through */
-        .order-left,
-        .order-right {
-            background: rgba(9, 9, 11, 0.55);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-        }
-
-        /* Order form layout — 3 columns: text | map | form */
         .order-section {
             display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr;
+            grid-template-columns: 1fr 1fr;
             border-bottom: 2px solid var(--border);
-            min-height: 520px;
         }
         .order-left {
             padding: 6rem 5vw;
@@ -41,48 +26,6 @@
             flex-direction: column;
             justify-content: center;
         }
-        .order-map {
-            position: relative;
-            border-right: 2px solid var(--border);
-            min-height: 520px;
-        }
-        #route-map {
-            width: 100%;
-            height: 100%;
-            min-height: 520px;
-        }
-        /* Dark Leaflet controls to match theme */
-        .leaflet-control-zoom a {
-            background: var(--muted) !important;
-            color: var(--fg) !important;
-            border-color: var(--border) !important;
-        }
-        .leaflet-control-zoom a:hover { background: var(--accent) !important; }
-        .leaflet-control-attribution {
-            background: rgba(9,9,11,0.75) !important;
-            color: var(--muted-fg) !important;
-            font-size: 0.55rem !important;
-        }
-        .leaflet-control-attribution a { color: var(--muted-fg) !important; }
-        /* Map status badge */
-        .map-status {
-            position: absolute;
-            bottom: 0.75rem;
-            left: 0.75rem;
-            z-index: 500;
-            font-size: 0.6rem;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            background: rgba(9,9,11,0.85);
-            color: var(--muted-fg);
-            padding: 0.4rem 0.75rem;
-            border: 1px solid var(--border);
-            pointer-events: none;
-            transition: color 0.3s;
-        }
-        .map-status.active { color: var(--accent); border-color: var(--accent); }
-
         .section-label {
             font-size: 0.7rem;
             font-weight: 700;
@@ -106,7 +49,7 @@
             line-height: 1.7;
             max-width: 420px;
         }
-        .order-right { padding: 4rem 3vw; }
+        .order-right { padding: 6rem 5vw; }
         .form-submit-row {
             margin-top: 2.5rem;
             display: flex;
@@ -120,14 +63,9 @@
         }
         .form-row .form-field:first-child {
             border-right: 2px solid var(--border);
-            padding-right: 1.5rem;
+            padding-right: 2rem;
         }
-        .form-row .form-field:last-child { padding-left: 1.5rem; }
-        /* Read-only jarak field styling */
-        .form-field input[readonly] {
-            color: var(--accent);
-            cursor: default;
-        }
+        .form-row .form-field:last-child { padding-left: 2rem; }
 
         /* Services section */
         .services-section { border-bottom: 2px solid var(--border); }
@@ -207,48 +145,6 @@
             transition: color 0.3s, border-color 0.3s;
         }
         .service-card:hover .service-tag { border-color: var(--accent-fg); }
-
-        /* Marquee ticker */
-        .marquee-strip {
-            overflow: hidden;
-            border-top: 2px solid var(--border);
-            border-bottom: 2px solid var(--border);
-            background: var(--accent);
-            padding: 0;
-            white-space: nowrap;
-            cursor: default;
-            user-select: none;
-        }
-        .marquee-track {
-            display: inline-flex;
-            align-items: center;
-            gap: 0;
-            animation: marquee-scroll 28s linear infinite;
-            will-change: transform;
-        }
-        .marquee-strip:hover .marquee-track {
-            animation-play-state: paused;
-        }
-        .marquee-item {
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--accent-fg);
-            padding: 0.9rem 2rem;
-        }
-        .marquee-sep {
-            font-size: 0.6rem;
-            color: rgba(255,255,255,0.5);
-            padding: 0 0.25rem;
-        }
-        @keyframes marquee-scroll {
-            from { transform: translateX(0); }
-            to   { transform: translateX(-50%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .marquee-track { animation: none; }
-        }
 
         /* Stats section */
         .stats-section {
@@ -337,9 +233,6 @@
 
         /* Responsive overrides */
         @media (max-width: 1024px) {
-            .order-section { grid-template-columns: 1fr 1fr; }
-            .order-map { grid-column: 1 / -1; border-right: none; border-bottom: 2px solid var(--border); min-height: 320px; }
-            #route-map { min-height: 320px; }
             .stats-section { grid-template-columns: repeat(2, 1fr); }
             .stat-block:nth-child(2) { border-right: none; }
             .stat-block:nth-child(3) { border-top: 2px solid var(--border); }
@@ -347,8 +240,6 @@
         }
         @media (max-width: 768px) {
             .order-section { grid-template-columns: 1fr; }
-            .order-map { grid-column: auto; min-height: 260px; border-bottom: 2px solid var(--border); }
-            #route-map { min-height: 260px; }
             .order-left { padding: 4rem 5vw 2rem; border-right: none; border-bottom: 2px solid var(--border); }
             .order-right { padding: 3rem 5vw 4rem; }
             .form-row { grid-template-columns: 1fr; }
@@ -373,10 +264,19 @@
     <a class="nav-brand" href="/">Go<span>Aja</span></a>
 
     <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/" class="active" aria-current="page">Beranda</a></li>
-        <li><a href="/orders">Pesanan</a></li>
-        <li><a href="/drivers">Driver</a></li>
-        <li><a href="/layanan">Layanan</a></li>
+        <li><a href="/">Beranda</a></li>
+
+        <!-- Pesanan visible untuk DRIVER & ADMIN -->
+        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
+            <a href="/orders">Pesanan</a>
+        </li>
+
+        <!-- Link Driver dan Layanan hanya untuk ADMIN -->
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
+
+        <!-- Untuk USER tampilkan pilihan Gabung jadi Driver -->
+        <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
     </ul>
 
     <div class="nav-right">
@@ -398,16 +298,9 @@
         <p class="section-label">Mulai Perjalanan</p>
         <h2 class="section-heading">Buat<br>Pesanan<br>Baru</h2>
         <p class="section-body">
-            Ketik lokasi penjemputan dan tujuan — peta akan otomatis menghitung jarak rute dan estimasi harga.
+            Isi detail perjalanan atau pengiriman kamu. Pilih layanan, tentukan jarak, dan kami akan menghitung estimasi harga secara otomatis.
         </p>
     </div>
-
-    <!-- MAP COLUMN -->
-    <div class="order-map">
-        <div id="route-map"></div>
-        <div class="map-status" id="mapStatus">Menunggu lokasi...</div>
-    </div>
-
     <div class="order-right reveal">
         <!-- Flash messages -->
         <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
@@ -417,12 +310,12 @@
             <div class="form-field">
                 <label for="lokasiJemput">Lokasi Penjemputan</label>
                 <input type="text" id="lokasiJemput" name="lokasiJemput"
-                       placeholder="Universitas Sumatera Utara" autocomplete="off" required>
+                       placeholder="Jl. Sudirman, Jakarta" autocomplete="street-address" required>
             </div>
             <div class="form-field">
                 <label for="lokasiTujuan">Tujuan</label>
                 <input type="text" id="lokasiTujuan" name="lokasiTujuan"
-                       placeholder="Rumah Ferdinand" autocomplete="off" required>
+                       placeholder="Bandara Soekarno-Hatta" required>
             </div>
             <div class="form-row">
                 <div class="form-field">
@@ -438,8 +331,7 @@
                 <div class="form-field">
                     <label for="jarak">Jarak (km)</label>
                     <input type="number" id="jarak" name="jarak"
-                           placeholder="—" min="0" step="0.1"
-                           readonly aria-readonly="true" required>
+                           placeholder="0.0" min="0" step="0.1" required>
                 </div>
             </div>
             <div class="form-field">
@@ -449,52 +341,11 @@
             </div>
             <div class="form-submit-row">
                 <button type="submit" class="btn-primary">Buat Pesanan</button>
-                <button type="button" class="btn-outline" id="resetBtn">Reset</button>
+                <button type="reset" class="btn-outline">Reset</button>
             </div>
         </form>
     </div>
 </section>
-
-<!-- ══════════════════════════════════════
-     MARQUEE TICKER
-══════════════════════════════════════ -->
-<div class="marquee-strip" aria-hidden="true">
-    <div class="marquee-track">
-        <span class="marquee-item">Ferdinand Ganteng</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">PBO</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">Revita Cantik</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">PBO</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">Umri Syifa</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">PBO</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">Bella</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">PBO</span>
-        <span class="marquee-sep">✦</span>
-        <!-- duplicate for seamless loop -->
-        <span class="marquee-item">Ferdinand Ganteng</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">PBO</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">Revita Cantik</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">PBO</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">Umri Syifa</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">PBO</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">Bella</span>
-        <span class="marquee-sep">✦</span>
-        <span class="marquee-item">PBO</span>
-        <span class="marquee-sep">✦</span>
-    </div>
-</div>
 
 <!-- ══════════════════════════════════════
      SERVICES
@@ -515,9 +366,9 @@
         <article class="service-card reveal">
             <div class="service-img-wrap">
                 <img
-                    src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=75&auto=format&fit=crop"
-                    alt="Motor di jalan kota untuk layanan GoRide"
-                    loading="lazy"
+                        src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=75&auto=format&fit=crop"
+                        alt="Motor di jalan kota untuk layanan GoRide"
+                        loading="lazy"
                 >
             </div>
             <p class="service-num">01 / Transportasi</p>
@@ -529,9 +380,9 @@
         <article class="service-card reveal">
             <div class="service-img-wrap">
                 <img
-                    src="https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&q=75&auto=format&fit=crop"
-                    alt="Paket pengiriman untuk layanan GoSend"
-                    loading="lazy"
+                        src="https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&q=75&auto=format&fit=crop"
+                        alt="Paket pengiriman untuk layanan GoSend"
+                        loading="lazy"
                 >
             </div>
             <p class="service-num">02 / Pengiriman</p>
@@ -543,9 +394,9 @@
         <article class="service-card reveal">
             <div class="service-img-wrap">
                 <img
-                    src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=600&q=75&auto=format&fit=crop"
-                    alt="Keamanan digital dan enkripsi data"
-                    loading="lazy"
+                        src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=600&q=75&auto=format&fit=crop"
+                        alt="Keamanan digital dan enkripsi data"
+                        loading="lazy"
                 >
             </div>
             <p class="service-num">03 / Keamanan</p>
@@ -619,174 +470,52 @@
     </div>
 </footer>
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
 <!-- ══════════════════════════════════════
-     SCRIPTS
+     SCRIPTS — vanilla JS only, no library needed
 ══════════════════════════════════════ -->
 <script>
-    // ── ORS API KEY — replace with your key from openrouteservice.org ──
-    const ORS_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6Ijc0YThiYWJkYTU5YjQ3MWVhM2JkZWVmZDZiZTdjZTZhIiwiaCI6Im11cm11cjY0In0=';
-
-    // ── Mobile nav toggle ──
-    document.getElementById('navToggle').addEventListener('click', () => {
-        const nl = document.getElementById('navLinks');
-        const open = nl.classList.toggle('open');
-        document.getElementById('navToggle').setAttribute('aria-expanded', open);
+    // Mobile nav toggle
+    const toggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    toggle.addEventListener('click', () => {
+        const open = navLinks.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open);
     });
 
-    // ── Scroll reveal ──
+    // Scroll reveal via IntersectionObserver
+    const revealEls = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
     }, { threshold: 0.12 });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    revealEls.forEach(el => observer.observe(el));
 
-    // ── Tariff map (server-side values take priority via data attrs if added later) ──
+    // Estimate price on jarak/layanan change
+    const jarakInput  = document.getElementById('jarak');
+    const layananSel  = document.getElementById('layananId');
+    const hargaInput  = document.getElementById('estimasiHarga');
+
+    // Tariff map built from Thymeleaf — populated server-side via data attributes
+    // Fallback static rates if layanan table is empty
     const tariffs = { '1': 3000, '2': 5000 };
 
-    // ── DOM refs ──
-    const lokasiJemputInput = document.getElementById('lokasiJemput');
-    const lokasiTujuanInput = document.getElementById('lokasiTujuan');
-    const jarakInput        = document.getElementById('jarak');
-    const layananSel        = document.getElementById('layananId');
-    const hargaInput        = document.getElementById('estimasiHarga');
-    const mapStatus         = document.getElementById('mapStatus');
-
-    // ── Init Leaflet map centered on Indonesia ──
-    const map = L.map('route-map', { zoomControl: true, attributionControl: true })
-                  .setView([-2.5, 118], 5);
-
-    // Dark tile layer (CartoDB Dark Matter — free, no key)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19
-    }).addTo(map);
-
-    // Custom accent-colored markers
-    function makeIcon(color) {
-        return L.divIcon({
-            className: '',
-            html: `<div style="
-                width:14px;height:14px;
-                background:${color};
-                border:2px solid #fff;
-                border-radius:50%;
-                box-shadow:0 0 0 3px ${color}55;
-            "></div>`,
-            iconSize: [14, 14],
-            iconAnchor: [7, 7]
-        });
-    }
-
-    let markerA = null, markerB = null, routeLine = null;
-
-    function setStatus(msg, active = false) {
-        mapStatus.textContent = msg;
-        mapStatus.classList.toggle('active', active);
-    }
-
-    // ── Geocode a place name via ORS ──
-    async function geocode(query) {
-        const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${encodeURIComponent(query)}&size=1`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Geocode gagal');
-        const data = await res.json();
-        if (!data.features || data.features.length === 0) throw new Error('Lokasi tidak ditemukan');
-        const [lng, lat] = data.features[0].geometry.coordinates;
-        return { lat, lng, label: data.features[0].properties.label };
-    }
-
-    // ── Get driving route via ORS Directions ──
-    async function getRoute(from, to) {
-        const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${ORS_KEY}&start=${from.lng},${from.lat}&end=${to.lng},${to.lat}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Rute tidak ditemukan');
-        const data = await res.json();
-        const seg  = data.features[0].properties.segments[0];
-        const distKm = (seg.distance / 1000).toFixed(1);
-        const coords = data.features[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-        return { distKm: parseFloat(distKm), coords };
-    }
-
-    // ── Update price estimate ──
     function updateEstimate() {
         const km     = parseFloat(jarakInput.value) || 0;
         const tariff = tariffs[layananSel.value] || 2500;
         const total  = km * tariff;
-        hargaInput.value = total > 0 ? 'Rp ' + total.toLocaleString('id-ID') : 'Rp 0';
+        hargaInput.value = total > 0
+            ? 'Rp ' + total.toLocaleString('id-ID')
+            : 'Rp 0';
     }
 
-    // ── Draw route on map ──
-    function drawRoute(from, to, coords) {
-        if (markerA) map.removeLayer(markerA);
-        if (markerB) map.removeLayer(markerB);
-        if (routeLine) map.removeLayer(routeLine);
-
-        markerA = L.marker([from.lat, from.lng], { icon: makeIcon('#DE3163') })
-                   .addTo(map).bindPopup(`<b>Jemput</b><br>${from.label}`);
-        markerB = L.marker([to.lat, to.lng], { icon: makeIcon('#FAFAFA') })
-                   .addTo(map).bindPopup(`<b>Tujuan</b><br>${to.label}`);
-
-        routeLine = L.polyline(coords, {
-            color: '#DE3163',
-            weight: 3,
-            opacity: 0.85,
-            dashArray: null
-        }).addTo(map);
-
-        map.fitBounds(routeLine.getBounds(), { padding: [32, 32] });
+    if (jarakInput && layananSel) {
+        jarakInput.addEventListener('input', updateEstimate);
+        layananSel.addEventListener('change', updateEstimate);
     }
-
-    // ── Debounce helper ──
-    function debounce(fn, ms) {
-        let t;
-        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-    }
-
-    // ── Main: geocode both fields then fetch route ──
-    let coordA = null, coordB = null;
-
-    async function tryRoute() {
-        const qA = lokasiJemputInput.value.trim();
-        const qB = lokasiTujuanInput.value.trim();
-        if (!qA || !qB) return;
-
-        setStatus('Mencari lokasi...', true);
-        try {
-            [coordA, coordB] = await Promise.all([geocode(qA), geocode(qB)]);
-            setStatus('Menghitung rute...', true);
-            const { distKm, coords } = await getRoute(coordA, coordB);
-            drawRoute(coordA, coordB, coords);
-            jarakInput.value = distKm;
-            updateEstimate();
-            setStatus(`Jarak: ${distKm} km`, true);
-        } catch (err) {
-            setStatus(err.message || 'Gagal memuat rute');
-            console.error(err);
-        }
-    }
-
-    const debouncedRoute = debounce(tryRoute, 900);
-    lokasiJemputInput.addEventListener('input', debouncedRoute);
-    lokasiTujuanInput.addEventListener('input', debouncedRoute);
-    layananSel.addEventListener('change', updateEstimate);
-
-    // ── Reset button ──
-    document.getElementById('resetBtn').addEventListener('click', () => {
-        lokasiJemputInput.value = '';
-        lokasiTujuanInput.value = '';
-        jarakInput.value = '';
-        hargaInput.value = '';
-        layananSel.value = '';
-        coordA = coordB = null;
-        if (markerA)  { map.removeLayer(markerA);  markerA  = null; }
-        if (markerB)  { map.removeLayer(markerB);  markerB  = null; }
-        if (routeLine){ map.removeLayer(routeLine); routeLine = null; }
-        map.setView([-2.5, 118], 5);
-        setStatus('Menunggu lokasi...');
-    });
 </script>
 
 </body>

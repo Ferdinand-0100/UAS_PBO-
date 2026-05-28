@@ -9,15 +9,14 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String lokasiJemput;
-
     private String lokasiTujuan;
-
+    private Double lokasiJemputLat;
+    private Double lokasiJemputLng;
+    private Double lokasiTujuanLat;
+    private Double lokasiTujuanLng;
     private double jarak;
-
     private double totalHarga;
-
     private String status;
 
     @ManyToOne
@@ -28,6 +27,11 @@ public class Order {
 
     @ManyToOne
     private Layanan layanan;
+
+    private Double driverLat;
+    private Double driverLng;
+
+    private Integer estimatedArrivalMinutes;
 
     public Order() {
     }
@@ -69,6 +73,38 @@ public class Order {
 
     public void setLokasiTujuan(String lokasiTujuan) {
         this.lokasiTujuan = lokasiTujuan;
+    }
+
+    public Double getLokasiJemputLat() {
+        return lokasiJemputLat;
+    }
+
+    public void setLokasiJemputLat(Double lokasiJemputLat) {
+        this.lokasiJemputLat = lokasiJemputLat;
+    }
+
+    public Double getLokasiJemputLng() {
+        return lokasiJemputLng;
+    }
+
+    public void setLokasiJemputLng(Double lokasiJemputLng) {
+        this.lokasiJemputLng = lokasiJemputLng;
+    }
+
+    public Double getLokasiTujuanLat() {
+        return lokasiTujuanLat;
+    }
+
+    public void setLokasiTujuanLat(Double lokasiTujuanLat) {
+        this.lokasiTujuanLat = lokasiTujuanLat;
+    }
+
+    public Double getLokasiTujuanLng() {
+        return lokasiTujuanLng;
+    }
+
+    public void setLokasiTujuanLng(Double lokasiTujuanLng) {
+        this.lokasiTujuanLng = lokasiTujuanLng;
     }
 
     public double getJarak() {
@@ -117,5 +153,29 @@ public class Order {
 
     public void setLayanan(Layanan layanan) {
         this.layanan = layanan;
+    }
+
+    public Double getDriverLat() {
+        return driverLat;
+    }
+
+    public void setDriverLat(Double driverLat) {
+        this.driverLat = driverLat;
+    }
+
+    public Double getDriverLng() {
+        return driverLng;
+    }
+
+    public void setDriverLng(Double driverLng) {
+        this.driverLng = driverLng;
+    }
+
+    public Integer getEstimatedArrivalMinutes() {
+        return estimatedArrivalMinutes;
+    }
+
+    public void setEstimatedArrivalMinutes(Integer estimatedArrivalMinutes) {
+        this.estimatedArrivalMinutes = estimatedArrivalMinutes;
     }
 }

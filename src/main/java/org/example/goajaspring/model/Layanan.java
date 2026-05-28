@@ -7,9 +7,8 @@ public class Layanan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(unique = true)
     private String namaLayanan;
-
     private double tarifPerKm;
 
     public Layanan() {
@@ -23,7 +22,6 @@ public class Layanan {
     public Long getId() {
         return id;
     }
-
     public String getNamaLayanan() {
         return namaLayanan;
     }
@@ -31,7 +29,6 @@ public class Layanan {
     public void setNamaLayanan(String namaLayanan) {
         this.namaLayanan = namaLayanan;
     }
-
     public double getTarifPerKm() {
         return tarifPerKm;
     }

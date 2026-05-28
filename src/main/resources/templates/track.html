@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Tracking Pesanan</title>
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
+</head>
+<body>
+<main style="padding:2rem;">
+    <h1>Tracking Pesanan <span th:text="${orderId}"></span></h1>
+    <div id="status">Memuat...</div>
+    <div id="coords"></div>
+    <div id="eta"></div>
+    <script>
+        const id = /*[[${orderId}]]*/ 0;
+        async function refresh() {
+          try {
+            const r = await fetch('/api/orders/' + id + '/track');
+            const j = await r.json();
+            document.getElementById('status').textContent = 'Status: ' + j.status;
+            document.getElementById('coords').textContent = 'Driver location: ' + j.driverLat + ', ' + j.driverLng;
+            document.getElementById('eta').textContent = 'ETA: ' + (j.etaMinutes || '—') + ' menit';
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        refresh();
+        setInterval(refresh, 5000);
+    </script>
+</main>
+</body>
+</html>

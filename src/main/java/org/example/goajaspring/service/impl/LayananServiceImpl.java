@@ -18,6 +18,9 @@ public class LayananServiceImpl implements LayananService{
 
     @Override
     public Layanan saveLayanan(Layanan layanan) {
+        if (layanan.getNamaLayanan() != null && layananRepository.existsByNamaLayanan(layanan.getNamaLayanan())) {
+            throw new RuntimeException("Layanan dengan nama yang sama sudah ada");
+        }
         return layananRepository.save(layanan);
     }
 

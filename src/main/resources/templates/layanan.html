@@ -64,10 +64,19 @@
 <nav class="site-nav" role="navigation" aria-label="Main navigation">
     <a class="nav-brand" href="/">Go<span>Aja</span></a>
     <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/">Beranda</a></li>
-        <li><a href="/orders">Pesanan</a></li>
-        <li><a href="/drivers">Driver</a></li>
-        <li><a href="/layanan" class="active" aria-current="page">Layanan</a></li>
+        <li><a href="/" th:classappend="${#httpServletRequest.requestURI == '/' ? 'active' : ''}">Beranda</a></li>
+
+        <!-- Pesanan visible untuk DRIVER & ADMIN -->
+        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
+            <a href="/orders" th:classappend="${#httpServletRequest.requestURI == '/orders' ? 'active' : ''}">Pesanan</a>
+        </li>
+
+        <!-- Link Driver dan Layanan hanya untuk ADMIN -->
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
+
+        <!-- Untuk USER tampilkan pilihan Gabung jadi Driver -->
+        <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
     </ul>
     <div class="nav-right">
         <span class="nav-user" sec:authentication="name">User</span>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head><!-- head... --></head>
+<body>
+<h1>Antrian Pendaftar Driver</h1>
+<div th:if="${#lists.isEmpty(applications)}">Tidak ada pendaftar</div>
+<table>
+    <thead><tr><th>#</th><th>Nama</th><th>Email</th><th>Kendaraan</th><th>Plat</th><th>Aksi</th></tr></thead>
+    <tbody>
+    <tr th:each="a : ${applications}">
+        <td th:text="${a.id}">1</td>
+        <td th:text="${a.nama}">—</td>
+        <td th:text="${a.email}">—</td>
+        <td th:text="${a.kendaraan}">—</td>
+        <td th:text="${a.platNomor}">—</td>
+        <td>
+            <form th:action="@{'/drivers/applications/' + ${a.id} + '/approve'}" method="post" style="display:inline">
+                <button type="submit" class="btn-primary btn-sm">Approve</button>
+            </form>
+            <form th:action="@{'/drivers/applications/' + ${a.id} + '/reject'}" method="post" style="display:inline">
+                <button type="submit" class="btn-outline btn-sm">Reject</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

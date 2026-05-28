@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Gabung jadi Driver</title>
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
+</head>
+<body>
+<main style="max-width:720px;margin:2rem auto;padding:1rem;">
+    <h1>Form Pendaftaran Driver</h1>
+    <form th:action="@{/driver/submit}" method="post" enctype="multipart/form-data">
+        <div class="form-field">
+            <label>Nama</label>
+            <input type="text" name="nama" required>
+        </div>
+        <div class="form-field">
+            <label>Email</label>
+            <input type="email" name="email" required>
+        </div>
+        <div class="form-field">
+            <label>Phone</label>
+            <input type="text" name="phone" required>
+        </div>
+        <div class="form-field">
+            <label>Alamat</label>
+            <input type="text" name="alamat" required>
+        </div>
+        <div class="form-field">
+            <label>Jenis Kendaraan</label>
+            <input type="text" name="kendaraan" required>
+        </div>
+        <div class="form-field">
+            <label>Plat Nomor</label>
+            <input type="text" name="platNomor" required>
+        </div>
+        <div class="form-field">
+            <label>Jenis Layanan</label>
+            <select name="layananId" required>
+                <option th:each="l : ${layananList}" th:value="${l.id}" th:text="${l.namaLayanan}">Layanan</option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label>Foto Diri (pasfoto)</label>
+            <input type="file" name="photo" accept="image/*" required>
+        </div>
+        <div class="form-field">
+            <label>Scan KTP</label>
+            <input type="file" name="ktp" accept="image/*,application/pdf" required>
+        </div>
+        <div class="form-field">
+            <label>Scan SIM</label>
+            <input type="file" name="sim" accept="image/*,application/pdf" required>
+        </div>
+        <div class="form-field">
+            <label>Scan STNK</label>
+            <input type="file" name="stnk" accept="image/*,application/pdf" required>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Kirim Aplikasi</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>
