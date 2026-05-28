@@ -40,4 +40,15 @@ public class UserServiceImpl implements UserService{
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
+
+    @Override
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User dengan ID " + id + " tidak ditemukan"));
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
+    }
 }

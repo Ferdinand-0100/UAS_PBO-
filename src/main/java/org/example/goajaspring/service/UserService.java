@@ -1,10 +1,13 @@
 package org.example.goajaspring.service;
+
 import org.example.goajaspring.model.User;
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 public interface UserService {
     User saveUser(User user);
-    List<User> getAllUsers();
     Optional<User> findByEmail(String email);
+    List<User> getAllUsers();
+    User getUserById(Long id);
+    void deleteUser(Long id);
 }

@@ -19,10 +19,15 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
+                        // resources + public endpoints
                         .requestMatchers("/login", "/signup", "/api/public/**", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
-                        .requestMatchers("/driver/apply", "/driver/submit").authenticated()  // USER + DRIVER + ADMIN bisa akses
-                        .requestMatchers("/admin/**", "/drivers/**", "/drivers/applications/**", "/layanan/**").hasRole("ADMIN")
-                        .requestMatchers("/orders/**", "/api/orders/**").hasAnyRole("DRIVER","ADMIN")
+                        // driver application endpoints (authenticated users can apply)
+                        .requestMatchers("/driver/apply", "/driver/submit").authenticated()
+                        // ADMIN may only access layanan pages
+                        .requestMatchers("/layanan/**", "/layanan").hasRole("ADMIN")
+                        // Orders and Drivers pages restricted to DRIVER role only (not ADMIN)
+                        .requestMatchers("/orders/**", "/api/orders/**", "/drivers/**", "/drivers/applications/**").hasRole("DRIVER")
+                        // dashboard and other authenticated pages
                         .requestMatchers("/").authenticated()
                         .anyRequest().authenticated()
                 )
