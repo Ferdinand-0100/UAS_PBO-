@@ -375,16 +375,11 @@
     <ul class="nav-links" id="navLinks" role="list">
         <li><a href="/">Beranda</a></li>
 
-        <!-- Pesanan visible untuk DRIVER & ADMIN -->
-        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
-            <a href="/orders">Pesanan</a>
-        </li>
+        <li><a href="/orders">Pesanan</a></li>
 
-        <!-- Link Driver dan Layanan hanya untuk ADMIN -->
         <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
         <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
 
-        <!-- Untuk USER tampilkan pilihan Gabung jadi Driver -->
         <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
     </ul>
 
@@ -657,7 +652,7 @@
         // Jakarta Center Coordinates
         const defaultLat = -6.2088;
         const defaultLng = 106.8456;
-        
+
         map = L.map('map', {
             zoomControl: false
         }).setView([defaultLat, defaultLng], 12);

@@ -2,31 +2,322 @@
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tracking Pesanan</title>
     <link rel="stylesheet" th:href="@{/css/shared.css}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .track-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .info-panel {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .info-panel h1 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .status-active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-pending {
+            background: #FF9800;
+            color: white;
+        }
+
+        .status-completed {
+            background: #2196F3;
+            color: white;
+        }
+
+        .info-group {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-group:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #999;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .map-wrapper {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        #trackingMap {
+            width: 100%;
+            height: 600px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .driver-info {
+            background: #f0f8ff;
+            padding: 1rem;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .track-container {
+                grid-template-columns: 1fr;
+            }
+
+            #trackingMap {
+                height: 400px;
+            }
+        }
+    </style>
 </head>
 <body>
-<main style="padding:2rem;">
-    <h1>Tracking Pesanan <span th:text="${orderId}"></span></h1>
-    <div id="status">Memuat...</div>
-    <div id="coords"></div>
-    <div id="eta"></div>
-    <script>
-        const id = /*[[${orderId}]]*/ 0;
-        async function refresh() {
-          try {
-            const r = await fetch('/api/orders/' + id + '/track');
-            const j = await r.json();
-            document.getElementById('status').textContent = 'Status: ' + j.status;
-            document.getElementById('coords').textContent = 'Driver location: ' + j.driverLat + ', ' + j.driverLng;
-            document.getElementById('eta').textContent = 'ETA: ' + (j.etaMinutes || '—') + ' menit';
-          } catch (e) {
-            console.error(e);
-          }
+<div class="track-container">
+    <!-- Info Panel -->
+    <div class="info-panel">
+        <h1>🚗 Tracking</h1>
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Memuat data pesanan...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map -->
+    <div class="map-wrapper">
+        <div id="trackingMap"></div>
+    </div>
+</div>
+
+<!-- Library -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const orderId = /*[[${orderId}]]*/ 0;
+    const config = {
+        map: null,
+        markers: {
+            pickup: null,
+            destination: null,
+            driver: null
+        },
+        polyline: null,
+        routePolyline: null
+    };
+
+    function initializeMap() {
+        config.map = L.map('trackingMap').setView([-6.2088, 106.8456], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19
+        }).addTo(config.map);
+    }
+
+    function updateMarker(type, lat, lng) {
+        if (!lat || !lng) return;
+
+        if (config.markers[type]) {
+            config.map.removeLayer(config.markers[type]);
         }
-        refresh();
-        setInterval(refresh, 5000);
-    </script>
-</main>
+
+        let color, label, icon;
+        if (type === 'pickup') {
+            color = 'green';
+            label = 'A';
+            icon = '📍';
+        } else if (type === 'destination') {
+            color = 'red';
+            label = 'B';
+            icon = '📌';
+        } else {
+            color = 'blue';
+            label = '🚗';
+            icon = '🚗';
+        }
+
+        config.markers[type] = L.circleMarker([lat, lng], {
+            radius: 8,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(config.map);
+
+        L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'text-label',
+                html: `<div style="font-size: 24px;">${icon}</div>`
+            })
+        }).addTo(config.map);
+    }
+
+    function drawRoute(pickupLat, pickupLng, destLat, destLng) {
+        if (config.routePolyline) {
+            config.map.removeLayer(config.routePolyline);
+        }
+
+        config.routePolyline = L.polyline([
+            [pickupLat, pickupLng],
+            [destLat, destLng]
+        ], {
+            color: '#2196F3',
+            weight: 3,
+            opacity: 0.5,
+            dashArray: '5, 5'
+        }).addTo(config.map);
+    }
+
+    async function fetchTrackingData() {
+        try {
+            const response = await fetch(`/api/orders/${orderId}/track`);
+            if (!response.ok) throw new Error('Gagal mengambil data');
+
+            const data = await response.json();
+            updateUI(data);
+        } catch (error) {
+            document.getElementById('content').innerHTML =
+                `<div class="error">⚠️ ${error.message}</div>`;
+            console.error(error);
+        }
+    }
+
+    function updateUI(data) {
+        const statusClass = {
+            'PENDING': 'status-pending',
+            'ACCEPTED': 'status-active',
+            'ARRIVED': 'status-active',
+            'COMPLETED': 'status-completed'
+        }[data.status] || 'status-pending';
+
+        document.getElementById('content').innerHTML = `
+            <div class="status-badge ${statusClass}">${data.status || 'Unknown'}</div>
+
+            <div class="info-group driver-info">
+                <div class="info-label">📍 Lokasi Driver</div>
+                <div class="info-value">${data.driverLat?.toFixed(6)}, ${data.driverLng?.toFixed(6)}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">⏱️ ETA</div>
+                <div class="info-value">${data.etaMinutes ? data.etaMinutes + ' menit' : '—'}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">🔢 ID Pesanan</div>
+                <div class="info-value">#${data.orderId}</div>
+            </div>
+        `;
+
+        // Update peta (jika data lokasi tersedia)
+        if (data.driverLat && data.driverLng) {
+            updateMarker('driver', data.driverLat, data.driverLng);
+        }
+    }
+
+    function startTracking() {
+        initializeMap();
+        fetchTrackingData();
+        setInterval(fetchTrackingData, 3000);
+    }
+
+    // Fetch order details untuk mendapat lokasi pickup & destination
+    async function loadOrderDetails() {
+        try {
+            const response = await fetch(`/api/orders/${orderId}`);
+            if (response.ok) {
+                const order = await response.json();
+                if (order.lokasiJemputLat && order.lokasiTujuanLat) {
+                    updateMarker('pickup', order.lokasiJemputLat, order.lokasiJemputLng);
+                    updateMarker('destination', order.lokasiTujuanLat, order.lokasiTujuanLng);
+                    drawRoute(order.lokasiJemputLat, order.lokasiJemputLng,
+                             order.lokasiTujuanLat, order.lokasiTujuanLng);
+
+                    const bounds = L.latLngBounds([
+                        [order.lokasiJemputLat, order.lokasiJemputLng],
+                        [order.lokasiTujuanLat, order.lokasiTujuanLng],
+                        [order.driverLat || order.lokasiJemputLat, order.driverLng || order.lokasiJemputLng]
+                    ]);
+                    config.map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            }
+        } catch (e) {
+            console.error('Error loading order details:', e);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        startTracking();
+        loadOrderDetails();
+    });
+</script>
 </body>
 </html>

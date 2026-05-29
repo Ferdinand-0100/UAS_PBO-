@@ -1,192 +1,585 @@
 <!DOCTYPE html>
-<html lang="id" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoAja — Pesanan</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Pesan Pesanan</title>
     <link rel="stylesheet" th:href="@{/css/shared.css}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <style>
-        .status-col { min-width: 120px; }
-        .actions-col { min-width: 180px; }
-        .accept-form { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-        .accept-form input[type="number"] {
-            width: 80px;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--fg);
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 600;
-            padding: 0.4rem 0.6rem;
-            outline: none;
+        .order-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        .accept-form input[type="number"]:focus { border-color: var(--accent); }
-        .harga { font-variant-numeric: tabular-nums; }
+
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .location-input {
+            position: relative;
+        }
+
+        .suggestion-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-box.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .map-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: 600px;
+        }
+
+        #trackingMap {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .location-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .location-info div {
+            padding: 0.5rem;
+            background: white;
+            border-radius: 4px;
+        }
+
+        .location-info label {
+            font-weight: 600;
+            color: #666;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .location-info span {
+            color: #333;
+            word-break: break-word;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .success-message {
+            color: #28a745;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .distance-info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .distance-info.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .order-container {
+                grid-template-columns: 1fr;
+            }
+
+            .map-section {
+                height: 400px;
+            }
+        }
     </style>
 </head>
 <body>
+<main class="order-container">
+    <!-- Form Section -->
+    <div class="form-section">
+        <h1>Pesan Pesanan</h1>
+        <form id="orderForm">
+            <!-- Lokasi Penjemputan -->
+            <div class="form-group location-input">
+                <label for="pickupLocation">📍 Lokasi Penjemputan</label>
+                <input
+                        type="text"
+                        id="pickupLocation"
+                        placeholder="Ketik alamat penjemputan..."
+                        autocomplete="off"
+                        required>
+                <div id="pickupSuggestions" class="suggestion-box"></div>
+                <div id="pickupError" class="error-message"></div>
+            </div>
 
-<!-- NAVBAR -->
-<nav class="site-nav" role="navigation" aria-label="Main navigation">
-    <a class="nav-brand" href="/">Go<span>Aja</span></a>
-    <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/" class="">Beranda</a></li>
+            <!-- Lokasi Tujuan -->
+            <div class="form-group location-input">
+                <label for="destinationLocation">📌 Lokasi Tujuan</label>
+                <input
+                        type="text"
+                        id="destinationLocation"
+                        placeholder="Ketik alamat tujuan..."
+                        autocomplete="off"
+                        required>
+                <div id="destinationSuggestions" class="suggestion-box"></div>
+                <div id="destinationError" class="error-message"></div>
+            </div>
 
-        <!-- Pesanan visible untuk DRIVER & ADMIN -->
-        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
-            <a href="/orders" th:classappend="${currentRole != null ? 'active' : ''}">Pesanan</a>
-        </li>
+            <!-- Tipe Layanan -->
+            <div class="form-group">
+                <label for="layanan">🚗 Tipe Layanan</label>
+                <select id="layanan" required>
+                    <option value="">-- Pilih Layanan --</option>
+                    <option value="1">Go Ride</option>
+                    <option value="2">Go Car</option>
+                    <option value="3">Go XL</option>
+                </select>
+            </div>
 
-        <!-- Link Driver dan Layanan hanya untuk ADMIN -->
-        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
-        <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
+            <!-- Informasi Lokasi -->
+            <div class="location-info" id="locationInfo" style="display: none;">
+                <div>
+                    <label>Pickup Lat:</label>
+                    <span id="pickupLat">-</span>
+                </div>
+                <div>
+                    <label>Pickup Lng:</label>
+                    <span id="pickupLng">-</span>
+                </div>
+                <div>
+                    <label>Dest Lat:</label>
+                    <span id="destLat">-</span>
+                </div>
+                <div>
+                    <label>Dest Lng:</label>
+                    <span id="destLng">-</span>
+                </div>
+            </div>
 
-        <!-- Untuk USER tampilkan pilihan Gabung jadi Driver -->
-        <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
-    </ul>
-    <div class="nav-right">
-        <span class="nav-user" sec:authentication="name">User</span>
-        <form th:action="@{/logout}" method="post">
-            <button type="submit" class="btn-logout">Keluar</button>
+            <!-- Informasi Jarak & Harga -->
+            <div class="distance-info" id="distanceInfo">
+                <p><strong>Jarak:</strong> <span id="distanceValue">-</span> km</p>
+                <p><strong>Estimasi Harga:</strong> Rp <span id="priceValue">-</span></p>
+            </div>
+
+            <!-- Messages -->
+            <div id="successMessage" class="success-message"></div>
+            <div id="errorMessage" class="error-message"></div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn" id="submitBtn">Pesan Sekarang</button>
         </form>
-        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
-    </div>
-</nav>
-
-<!-- PAGE HEADER -->
-<div class="page-header reveal">
-    <div class="page-header-left">
-        <p class="page-eyebrow">Manajemen</p>
-        <h1 class="page-title">Pesanan</h1>
-    </div>
-</div>
-
-<!-- FLASH MESSAGES -->
-<div style="padding: 0 5vw; margin-top: 1.5rem;">
-    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-    <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
-</div>
-
-<!-- ORDERS TABLE -->
-<main style="padding: 2rem 0 6rem;">
-
-    <!-- Empty state -->
-    <div th:if="${#lists.isEmpty(orders)}" class="empty-state reveal">
-        <div class="empty-state-num" aria-hidden="true">0</div>
-        <p class="empty-state-msg">Belum ada pesanan</p>
     </div>
 
-    <!-- Table -->
-    <div th:unless="${#lists.isEmpty(orders)}" class="data-table-wrap reveal">
-        <table class="data-table" aria-label="Daftar pesanan">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Penjemputan</th>
-                    <th>Tujuan</th>
-                    <th>Layanan</th>
-                    <th>Jarak</th>
-                    <th>Total Harga</th>
-                    <th class="status-col">Status</th>
-                    <th>Driver</th>
-                    <th class="actions-col">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="order : ${orders}">
-                    <td th:text="${order.id}">1</td>
-                    <td th:text="${order.lokasiJemput}">—</td>
-                    <td th:text="${order.lokasiTujuan}">—</td>
-                    <td th:text="${order.layanan != null ? order.layanan.namaLayanan : '—'}">—</td>
-                    <td th:text="${order.jarak + ' km'}">—</td>
-                    <td class="harga"
-                        th:text="${'Rp ' + #numbers.formatInteger(order.totalHarga, 1, 'COMMA')}">—</td>
-                    <td>
-                        <span class="badge"
-                              th:classappend="${order.status == 'MENUNGGU'  ? 'badge-waiting' :
-                                               order.status == 'DIJEMPUT'  ? 'badge-active'  :
-                                               order.status == 'SELESAI'   ? 'badge-done'    : ''}"
-                              th:text="${order.status}">—</span>
-                    </td>
-                    <td th:text="${order.driver != null ? order.driver.nama : '—'}">—</td>
-                    <td>
-                        <!-- Only show accept form if status is MENUNGGU -->
-                        <form th:if="${order.status == 'MENUNGGU'}"
-                              th:action="@{/orders/{id}/accept/{did}(id=${order.id}, did=0)}"
-                              method="post"
-                              class="accept-form"
-                              th:id="'form-' + ${order.id}">
-                            <input type="number"
-                                   name="driverId"
-                                   placeholder="ID Driver"
-                                   min="1"
-                                   required
-                                   aria-label="ID Driver untuk order ini"
-                                   th:id="'driver-input-' + ${order.id}">
-                            <button type="button"
-                                    class="btn-primary btn-sm"
-                                    th:onclick="'submitAccept(' + ${order.id} + ')'">
-                                Terima
-                            </button>
-                        </form>
-
-                        <!-- Tombol Tandai Sampai: tampil hanya jika order sedang DIJEMPUT dan current user role DRIVER -->
-                        <button th:if="${order.status == 'DIJEMPUT' and currentRole == 'DRIVER'}"
-                                type="button"
-                                class="btn-outline"
-                                th:onclick="'markArrived(' + ${order.id} + ')'">
-                            Tandai Sampai
-                        </button>
-
-                        <span th:unless="${order.status == 'MENUNGGU'}"
-                              style="font-size:0.75rem; color: var(--muted-fg); text-transform:uppercase; letter-spacing:0.1em;">
-                        </span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Map Section -->
+    <div class="map-section">
+        <div id="trackingMap"></div>
     </div>
 </main>
 
-<!-- FOOTER -->
-<footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Go<span>Aja</span></div>
-        <p class="footer-copy">&copy; 2025 GoAja &mdash; UAS Pemrograman Berorientasi Objek</p>
-    </div>
-</footer>
+<!-- Library Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
+<!-- Main Script -->
 <script>
-    // Nav toggle
-    document.getElementById('navToggle').addEventListener('click', function() {
-        const nl = document.getElementById('navLinks');
-        const open = nl.classList.toggle('open');
-        this.setAttribute('aria-expanded', open);
-    });
+    // ========== KONFIGURASI GLOBAL ==========
+    const config = {
+        map: null,
+        markers: {
+            pickup: null,
+            destination: null
+        },
+        polyline: null,
+        coordinates: {
+            pickup: { lat: null, lng: null, address: '' },
+            destination: { lat: null, lng: null, address: '' }
+        }
+    };
 
-    // Scroll reveal
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    // ========== INISIALISASI PETA ==========
+    function initializeMap() {
+        config.map = L.map('trackingMap').setView([-6.2088, 106.8456], 13); // Jakarta
 
-    // Accept order — reads driver ID from input, then submits to correct URL
-    function submitAccept(orderId) {
-        const input = document.getElementById('driver-input-' + orderId);
-        const driverId = input.value;
-        if (!driverId || driverId < 1) {
-            input.focus();
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(config.map);
+    }
+
+    // ========== GEOCODING KE KOORDINAT ==========
+    function geocodeAddress(address) {
+        return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    return {
+                        lat: parseFloat(data[0].lat),
+                        lng: parseFloat(data[0].lon),
+                        displayName: data[0].display_name
+                    };
+                }
+                throw new Error('Lokasi tidak ditemukan');
+            });
+    }
+
+    // ========== REVERSE GEOCODING KE ALAMAT ==========
+    function reverseGeocode(lat, lng) {
+        return fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(response => response.json())
+            .then(data => data.address?.road || data.address?.city || data.display_name || 'Unknown')
+            .catch(() => 'Alamat tidak ditemukan');
+    }
+
+    // ========== HITUNG JARAK ANTAR DUA TITIK ==========
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371; // Radius Earth dalam km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    // ========== HITUNG HARGA BERDASARKAN JARAK ==========
+    function calculatePrice(distance) {
+        // Rumus: Rp 2500 per km + Rp 5000 minimum
+        const basePrice = 5000;
+        const pricePerKm = 2500;
+        return Math.max(basePrice, Math.round(distance * pricePerKm));
+    }
+
+    // ========== UPDATE MARKER DI PETA ==========
+    function updateMarker(type, lat, lng) {
+        if (config.markers[type]) {
+            config.map.removeLayer(config.markers[type]);
+        }
+
+        const iconColor = type === 'pickup' ? 'green' : 'red';
+        const iconLabel = type === 'pickup' ? 'A' : 'B';
+
+        config.markers[type] = L.circleMarker([lat, lng], {
+            radius: 8,
+            fillColor: iconColor,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7,
+            className: `marker-${type}`
+        }).addTo(config.map)
+         .bindPopup(`<strong>${type === 'pickup' ? 'Penjemputan' : 'Tujuan'}</strong><br>${config.coordinates[type].address}`);
+
+        // Tambah label
+        L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'text-label',
+                html: `<div style="background: ${iconColor}; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">${iconLabel}</div>`
+            })
+        }).addTo(config.map);
+    }
+
+    // ========== GAMBAR GARIS RUTE ==========
+    function drawRoute() {
+        if (config.polyline) {
+            config.map.removeLayer(config.polyline);
+        }
+
+        if (config.coordinates.pickup.lat && config.coordinates.destination.lat) {
+            config.polyline = L.polyline([
+                [config.coordinates.pickup.lat, config.coordinates.pickup.lng],
+                [config.coordinates.destination.lat, config.coordinates.destination.lng]
+            ], {
+                color: '#2196F3',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '5, 5'
+            }).addTo(config.map);
+
+            // Zoom ke rute
+            const bounds = config.polyline.getBounds();
+            config.map.fitBounds(bounds, { padding: [50, 50] });
+
+            // Update jarak dan harga
+            const distance = calculateDistance(
+                config.coordinates.pickup.lat,
+                config.coordinates.pickup.lng,
+                config.coordinates.destination.lat,
+                config.coordinates.destination.lng
+            );
+            updateDistanceInfo(distance);
+        }
+    }
+
+    // ========== UPDATE INFORMASI JARAK ==========
+    function updateDistanceInfo(distance) {
+        const price = calculatePrice(distance);
+        document.getElementById('distanceValue').textContent = distance.toFixed(2);
+        document.getElementById('priceValue').textContent = price.toLocaleString('id-ID');
+        document.getElementById('distanceInfo').classList.add('show');
+        document.getElementById('locationInfo').style.display = 'grid';
+    }
+
+    // ========== TANGANI PENCARIAN LOKASI ==========
+    async function handleLocationSearch(inputId, suggestionsId, coordType) {
+        const input = document.getElementById(inputId);
+        const suggestions = document.getElementById(suggestionsId);
+        const errorDiv = document.getElementById(inputId.replace('Location', 'Error'));
+
+        input.addEventListener('input', async (e) => {
+            const value = e.target.value.trim();
+
+            if (value.length < 3) {
+                suggestions.classList.remove('active');
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&limit=10`
+                );
+                const results = await response.json();
+
+                if (results.length > 0) {
+                    suggestions.innerHTML = results.map(result => `
+                        <div class="suggestion-item" data-lat="${result.lat}" data-lng="${result.lon}" data-address="${result.display_name}">
+                            <strong>${result.name || result.address?.road}</strong>
+                            <div style="font-size: 0.85rem; color: #666;">
+                                ${result.address?.city || ''} ${result.address?.country || ''}
+                            </div>
+                        </div>
+                    `).join('');
+                    suggestions.classList.add('active');
+
+                    // Tangani klik saran
+                    suggestions.querySelectorAll('.suggestion-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            selectLocation(item, inputId, suggestionsId, coordType, errorDiv);
+                        });
+                    });
+                } else {
+                    suggestions.innerHTML = '<div class="suggestion-item" style="color: #999;">Lokasi tidak ditemukan</div>';
+                    suggestions.classList.add('active');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Gagal memuat saran lokasi';
+                errorDiv.style.display = 'block';
+                console.error('Geocoding error:', error);
+            }
+        });
+    }
+
+    // ========== PILIH LOKASI DARI SARAN ==========
+    function selectLocation(element, inputId, suggestionsId, coordType, errorDiv) {
+        const lat = parseFloat(element.dataset.lat);
+        const lng = parseFloat(element.dataset.lng);
+        const address = element.dataset.address;
+
+        // Update input
+        document.getElementById(inputId).value = address;
+
+        // Simpan koordinat
+        config.coordinates[coordType] = { lat, lng, address };
+
+        // Update UI
+        if (coordType === 'pickup') {
+            document.getElementById('pickupLat').textContent = lat.toFixed(6);
+            document.getElementById('pickupLng').textContent = lng.toFixed(6);
+        } else {
+            document.getElementById('destLat').textContent = lat.toFixed(6);
+            document.getElementById('destLng').textContent = lng.toFixed(6);
+        }
+
+        // Update marker
+        updateMarker(coordType, lat, lng);
+
+        // Sembunyikan saran
+        document.getElementById(suggestionsId).classList.remove('active');
+        errorDiv.style.display = 'none';
+
+        // Draw route jika kedua lokasi sudah ada
+        if (config.coordinates.pickup.lat && config.coordinates.destination.lat) {
+            drawRoute();
+        }
+    }
+
+    // ========== SUBMIT FORM ==========
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const errorMsg = document.getElementById('errorMessage');
+        const successMsg = document.getElementById('successMessage');
+
+        // Validasi
+        if (!config.coordinates.pickup.lat || !config.coordinates.destination.lat) {
+            errorMsg.textContent = 'Mohon lengkapi lokasi penjemputan dan tujuan';
+            errorMsg.style.display = 'block';
             return;
         }
-        const form = document.getElementById('form-' + orderId);
-        form.action = '/orders/' + orderId + '/accept/' + driverId;
-        form.submit();
-    }
-</script>
 
+        const layanan = document.getElementById('layanan').value;
+        if (!layanan) {
+            errorMsg.textContent = 'Mohon pilih tipe layanan';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        // Siapkan data
+        const distance = calculateDistance(
+            config.coordinates.pickup.lat,
+            config.coordinates.pickup.lng,
+            config.coordinates.destination.lat,
+            config.coordinates.destination.lng
+        );
+
+        const orderData = {
+            lokasiJemput: config.coordinates.pickup.address,
+            lokasiTujuan: config.coordinates.destination.address,
+            lokasiJemputLat: config.coordinates.pickup.lat,
+            lokasiJemputLng: config.coordinates.pickup.lng,
+            lokasiTujuanLat: config.coordinates.destination.lat,
+            lokasiTujuanLng: config.coordinates.destination.lng,
+            jarak: distance,
+            totalHarga: calculatePrice(distance),
+            layanan: { id: layanan }
+        };
+
+        try {
+            document.getElementById('submitBtn').disabled = true;
+
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal membuat pesanan');
+            }
+
+            const result = await response.json();
+            successMsg.textContent = `✓ Pesanan berhasil dibuat! ID: ${result.id}`;
+            successMsg.style.display = 'block';
+            errorMsg.style.display = 'none';
+
+            // Reset form setelah 2 detik
+            setTimeout(() => {
+                document.getElementById('orderForm').reset();
+                config.coordinates = { pickup: { lat: null, lng: null, address: '' }, destination: { lat: null, lng: null, address: '' } };
+                config.map.setView([-6.2088, 106.8456], 13);
+            }, 2000);
+
+        } catch (error) {
+            errorMsg.textContent = 'Gagal membuat pesanan: ' + error.message;
+            errorMsg.style.display = 'block';
+            console.error('Order error:', error);
+        } finally {
+            document.getElementById('submitBtn').disabled = false;
+        }
+    });
+
+    // ========== INISIALISASI ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeMap();
+        handleLocationSearch('pickupLocation', 'pickupSuggestions', 'pickup');
+        handleLocationSearch('destinationLocation', 'destinationSuggestions', 'destination');
+    });
+</script>
 </body>
 </html>

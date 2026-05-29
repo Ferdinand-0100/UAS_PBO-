@@ -67,18 +67,11 @@
     <ul class="nav-links" id="navLinks" role="list">
         <li><a href="/">Beranda</a></li>
 
-        <!-- Pesanan hanya untuk DRIVER (ADMIN tidak melihat Pesanan) -->
-        <li th:if="${currentRole == 'DRIVER'}">
-            <a href="/orders">Pesanan</a>
-        </li>
+        <li><a href="/orders">Pesanan</a></li>
 
-        <!-- Daftar Driver: hanya untuk DRIVER role (ubah jika perlu) -->
-        <li th:if="${currentRole == 'DRIVER'}"><a href="/drivers">Driver</a></li>
-
-        <!-- Layanan: hanya untuk ADMIN -->
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
         <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
 
-        <!-- Untuk USER tampilkan pilihan Gabung jadi Driver -->
         <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
     </ul>
 

@@ -12,6 +12,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.security.core.Authentication;
+import org.example.goajaspring.repository.OrderRepository;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -23,15 +25,18 @@ public class PageController {
     private final DriverService driverService;
     private final LayananService layananService;
     private final UserService userService;
+    private final OrderRepository orderRepository;  // <-- tambah ini
 
     public PageController(OrderService orderService,
                           DriverService driverService,
                           LayananService layananService,
-                          UserService userService) {
+                          UserService userService,
+                          OrderRepository orderRepository) {  // <-- tambah param
         this.orderService  = orderService;
         this.driverService = driverService;
         this.layananService = layananService;
         this.userService   = userService;
+        this.orderRepository = orderRepository;  // <-- assign
     }
 
     /* DASHBOARD — GET */
@@ -89,9 +94,9 @@ public class PageController {
     /* ORDERS — GET /orders */
     @GetMapping("/orders")
     public String orders(Model model, Authentication authentication) {
-        model.addAttribute("orders", orderService.getAllOrders());
-
         String currentRole = "USER";
+        List<Order> ordersList = new ArrayList<>();
+
         if (authentication != null) {
             var authorities = authentication.getAuthorities();
             if (authorities != null && !authorities.isEmpty()) {
@@ -100,23 +105,22 @@ public class PageController {
                     currentRole = full.startsWith("ROLE_") ? full.substring(5) : full;
                 }
             }
+
+            // Jika USER, tampilkan hanya pesanan miliknya
+            if ("USER".equals(currentRole)) {
+                var userOpt = userService.findByEmail(authentication.getName());
+                if (userOpt.isPresent()) {
+                    ordersList = orderRepository.findByUser(userOpt.get());
+                }
+            } else {
+                // DRIVER dan ADMIN melihat semua
+                ordersList = orderService.getAllOrders();
+            }
         }
+
+        model.addAttribute("orders", ordersList);
         model.addAttribute("currentRole", currentRole);
         return "orders";
-    }
-
-    /* ACCEPT ORDER — POST /orders/{id}/accept/{driverId} */
-    @PostMapping("/orders/{orderId}/accept/{driverId}")
-    public String acceptOrder(@PathVariable Long orderId,
-                              @PathVariable Long driverId,
-                              RedirectAttributes ra) {
-        try {
-            orderService.acceptOrder(orderId, driverId);
-            ra.addFlashAttribute("success", "Order berhasil diterima oleh driver.");
-        } catch (RuntimeException e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/orders";
     }
 
     /* DRIVERS — GET /drivers */
