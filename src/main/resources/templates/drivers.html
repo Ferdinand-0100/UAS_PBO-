@@ -16,16 +16,17 @@
 <nav class="site-nav" role="navigation" aria-label="Main navigation">
     <a class="nav-brand" href="/">Go<span>Aja</span></a>
     <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/" th:classappend="${#httpServletRequest.requestURI == '/' ? 'active' : ''}">Beranda</a></li>
+        <li><a href="/">Beranda</a></li>
 
         <!-- Pesanan visible untuk DRIVER & ADMIN -->
         <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
-            <a href="/orders" th:classappend="${#httpServletRequest.requestURI == '/orders' ? 'active' : ''}">Pesanan</a>
+            <a href="/orders">Pesanan</a>
         </li>
 
         <!-- Link Driver dan Layanan hanya untuk ADMIN -->
         <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
         <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
+
 
         <!-- Untuk USER tampilkan pilihan Gabung jadi Driver -->
         <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
@@ -69,28 +70,38 @@
         <div th:unless="${#lists.isEmpty(drivers)}" class="data-table-wrap reveal">
             <table class="data-table" aria-label="Daftar driver">
                 <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Nama</th>
-                        <th>Email</th>
-                        <th>Kendaraan</th>
-                        <th>Plat Nomor</th>
-                        <th>Status</th>
-                    </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>Kendaraan</th>
+                    <th>Plat Nomor</th>
+                    <th>Status</th>
+                    <th th:if="${currentRole == 'ADMIN'}">Aksi</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="driver : ${drivers}">
-                        <td th:text="${driver.id}">1</td>
-                        <td th:text="${driver.nama}">—</td>
-                        <td th:text="${driver.email}">—</td>
-                        <td th:text="${driver.kendaraan}">—</td>
-                        <td th:text="${driver.platNomor}">—</td>
-                        <td>
+                <tr th:each="driver : ${drivers}">
+                    <td th:text="${driver.id}">1</td>
+                    <td th:text="${driver.nama}">—</td>
+                    <td th:text="${driver.email}">—</td>
+                    <td th:text="${driver.kendaraan}">—</td>
+                    <td th:text="${driver.platNomor}">—</td>
+                    <td>
                             <span class="badge"
                                   th:classappend="${driver.available ? 'badge-active' : 'badge-busy'}"
                                   th:text="${driver.available ? 'Tersedia' : 'Sibuk'}">—</span>
-                        </td>
-                    </tr>
+                    <td th:if="${currentRole == 'ADMIN'}">
+                        <form th:action="@{/drivers/{id}/delete(id=${driver.id})}" method="post"
+                              class="delete-driver-form"
+                              th:data-driver-name="${driver.nama}"
+                              style="display:inline;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" class="btn-danger">Hapus</button>
+                        </form>
+                    </td>
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -153,6 +164,18 @@
         entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Konfirmasi hapus driver
+    document.querySelectorAll('.delete-driver-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const driverName = this.getAttribute('data-driver-name');
+            const confirmed = confirm('Hapus driver "' + driverName + '" ?');
+            if (!confirmed) {
+                e.preventDefault();
+            }
+        });
+    });
+
 </script>
 
 </body>

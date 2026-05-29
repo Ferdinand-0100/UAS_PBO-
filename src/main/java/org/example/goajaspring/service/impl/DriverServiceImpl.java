@@ -28,4 +28,12 @@ public class DriverServiceImpl implements DriverService{
     public List<Driver> getAllDrivers() {
         return driverRepository.findAll();
     }
+
+    @Override
+    public void deleteDriver(Long driverId) {
+        if (!driverRepository.existsById(driverId)) {
+            throw new RuntimeException("Driver dengan id " + driverId + " tidak ditemukan");
+        }
+        driverRepository.deleteById(driverId);
+    }
 }

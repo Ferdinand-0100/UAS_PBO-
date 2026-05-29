@@ -7,4 +7,5 @@ import java.util.List;
 public interface DriverService {
     Driver saveDriver(Driver driver);
     List<Driver> getAllDrivers();
+    void deleteDriver(Long driverId);
 }
