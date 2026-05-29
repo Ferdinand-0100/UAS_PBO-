@@ -1,28 +1,409 @@
 <!DOCTYPE html>
-<html lang="id" xmlns:th="http://www.thymeleaf.org">
-<head><!-- head... --></head>
+<html lang="id" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoAja — Aplikasi Driver</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
+    <style>
+        /* Additional styles for driver applications */
+        .app-detail-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            margin-bottom: 2rem;
+            padding: 2.5rem 5vw;
+            border-bottom: 2px solid var(--border);
+        }
+        .app-detail-card:last-child {
+            border-bottom: none;
+        }
+        .app-section-title {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .app-field {
+            margin-bottom: 1rem;
+        }
+        .app-field-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        .app-field-value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--fg);
+        }
+        .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .doc-item {
+            text-align: center;
+        }
+        .doc-thumbnail {
+            width: 100%;
+            height: 140px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.8rem;
+            font-size: 0.75rem;
+            color: var(--muted-fg);
+            overflow: hidden;
+        }
+        .doc-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .doc-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-bottom: 0.5rem;
+        }
+        .doc-link {
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .doc-link:hover {
+            opacity: 0.8;
+        }
+        .app-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .app-header-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--fg);
+        }
+        .app-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 1rem;
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+            border-top: 2px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .app-actions form {
+            flex: 0 0 auto;
+        }
+        .app-actions input {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--fg);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            padding: 0.6rem 1rem;
+            flex: 1;
+            min-width: 250px;
+            transition: border-color 0.2s;
+        }
+        .app-actions input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .app-actions input::placeholder {
+            color: var(--muted);
+        }
+        .btn-approve {
+            background: #22c55e;
+            color: white;
+        }
+        .btn-approve:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+        .btn-reject-reason {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            display: flex;
+            gap: 0.5rem;
+            align-items: stretch;
+        }
+        .btn-reject-reason:hover {
+            background: var(--accent);
+            color: var(--accent-fg);
+        }
+        .app-actions-approve-only {
+            display: flex;
+            gap: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .app-detail-card {
+                grid-template-columns: 1fr;
+            }
+            .docs-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .app-detail-card {
+                padding: 2rem 5vw;
+                gap: 1.5rem;
+            }
+            .docs-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-actions {
+                flex-direction: column;
+            }
+            .app-actions form {
+                width: 100%;
+            }
+            .app-actions input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
 <body>
-<h1>Antrian Pendaftar Driver</h1>
-<div th:if="${#lists.isEmpty(applications)}">Tidak ada pendaftar</div>
-<table>
-    <thead><tr><th>#</th><th>Nama</th><th>Email</th><th>Kendaraan</th><th>Plat</th><th>Aksi</th></tr></thead>
-    <tbody>
-    <tr th:each="a : ${applications}">
-        <td th:text="${a.id}">1</td>
-        <td th:text="${a.nama}">—</td>
-        <td th:text="${a.email}">—</td>
-        <td th:text="${a.kendaraan}">—</td>
-        <td th:text="${a.platNomor}">—</td>
-        <td>
-            <form th:action="@{'/drivers/applications/' + ${a.id} + '/approve'}" method="post" style="display:inline">
-                <button type="submit" class="btn-primary btn-sm">Approve</button>
-            </form>
-            <form th:action="@{'/drivers/applications/' + ${a.id} + '/reject'}" method="post" style="display:inline">
-                <button type="submit" class="btn-outline btn-sm">Reject</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+
+<!-- NAVBAR -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-brand" href="/">Go<span>Aja</span></a>
+
+    <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="/">Beranda</a></li>
+        <li><a href="/orders">Pesanan</a></li>
+        <li><a href="/drivers/applications">Aplikasi Driver</a></li>
+        <li><a href="/drivers">Driver</a></li>
+        <li><a href="/layanan">Layanan</a></li>
+    </ul>
+
+    <div class="nav-right">
+        <span class="nav-user" sec:authentication="name">User</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Keluar</button>
+        </form>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header reveal">
+    <div class="page-header-left">
+        <p class="page-eyebrow">Manajemen</p>
+        <h1 class="page-title">Aplikasi Driver</h1>
+    </div>
+</div>
+
+<!-- FLASH MESSAGES -->
+<div style="padding: 1.5rem 5vw 0;">
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div style="padding: 2rem 5vw;">
+    <!-- Empty State -->
+    <div th:if="${applications == null or #lists.isEmpty(applications)}" class="empty-state reveal">
+        <div class="empty-state-num" aria-hidden="true">0</div>
+        <p class="empty-state-msg">Tidak ada aplikasi driver yang tertunda</p>
+    </div>
+
+    <!-- Applications List -->
+    <div th:unless="${applications == null or #lists.isEmpty(applications)}">
+        <div class="app-detail-card reveal" th:each="app : ${applications}">
+            <!-- Header -->
+            <div class="app-header">
+                <h2 class="app-header-name" th:text="${app.nama}">John Doe</h2>
+                <span class="badge badge-waiting">PENDING</span>
+            </div>
+
+            <!-- Informasi Pribadi -->
+            <div class="app-section">
+                <h3 class="app-section-title">Informasi Pribadi</h3>
+                <div class="app-field">
+                    <span class="app-field-label">Nama Lengkap</span>
+                    <span class="app-field-value" th:text="${app.nama}">—</span>
+                </div>
+                <div class="app-field">
+                    <span class="app-field-label">Email</span>
+                    <span class="app-field-value" th:text="${app.email}">—</span>
+                </div>
+                <div class="app-field">
+                    <span class="app-field-label">Nomor Telepon</span>
+                    <span class="app-field-value" th:text="${app.phone}">—</span>
+                </div>
+                <div class="app-field">
+                    <span class="app-field-label">Alamat</span>
+                    <span class="app-field-value" th:text="${app.alamat}">—</span>
+                </div>
+            </div>
+
+            <!-- Informasi Kendaraan -->
+            <div class="app-section">
+                <h3 class="app-section-title">Informasi Kendaraan</h3>
+                <div class="app-field">
+                    <span class="app-field-label">Jenis Kendaraan</span>
+                    <span class="app-field-value" th:text="${app.kendaraan}">—</span>
+                </div>
+                <div class="app-field">
+                    <span class="app-field-label">Plat Nomor</span>
+                    <span class="app-field-value" th:text="${app.platNomor}">—</span>
+                </div>
+                <div class="app-field">
+                    <span class="app-field-label">Layanan Pilihan</span>
+                    <span class="app-field-value" th:text="${app.layananId}">—</span>
+                </div>
+            </div>
+
+            <!-- Dokumen -->
+            <div class="app-section" style="grid-column: 1 / -1;">
+                <h3 class="app-section-title">Dokumen</h3>
+                <div class="docs-grid">
+                    <!-- Foto Profil -->
+                    <div class="doc-item">
+                        <div class="doc-thumbnail">
+                            <img th:if="${app.photoPath != null}"
+                                 th:src="@{/uploads/{file}(file=${app.photoPath})}"
+                                 alt="Foto Profil"
+                                 style="width:100%; height:100%; object-fit: cover;">
+                            <span th:unless="${app.photoPath != null}">Tidak ada</span>
+                        </div>
+                        <div class="doc-label">Foto Profil</div>
+                        <a th:if="${app.photoPath != null}"
+                           th:href="@{/uploads/{file}(file=${app.photoPath.substring(app.photoPath.lastIndexOf('\\') + 1)})}"
+                           target="_blank"
+                           class="doc-link">Lihat</a>
+                    </div>
+
+                    <!-- KTP -->
+                    <div class="doc-item">
+                        <div class="doc-thumbnail">
+                            <img th:if="${app.ktpPath != null}"
+                                 th:src="@{/uploads/{file}(file=${app.photoPath})}"
+                                 alt="KTP"
+                                 style="width:100%; height:100%; object-fit: cover;">
+                            <span th:unless="${app.ktpPath != null}">Tidak ada</span>
+                        </div>
+                        <div class="doc-label">KTP</div>
+                        <a th:if="${app.ktpPath != null}"
+                           th:href="@{/uploads/{file}(file=${app.ktpPath.substring(app.ktpPath.lastIndexOf('\\') + 1)})}"
+                           target="_blank"
+                           class="doc-link">Lihat</a>
+                    </div>
+
+                    <!-- SIM -->
+                    <div class="doc-item">
+                        <div class="doc-thumbnail">
+                            <img th:if="${app.simPath != null}"
+                                 th:src="@{/uploads/{file}(file=${app.photoPath})}"
+                                 alt="SIM"
+                                 style="width:100%; height:100%; object-fit: cover;">
+                            <span th:unless="${app.simPath != null}">Tidak ada</span>
+                        </div>
+                        <div class="doc-label">SIM</div>
+                        <a th:if="${app.simPath != null}"
+                           th:href="@{/uploads/{file}(file=${app.simPath.substring(app.simPath.lastIndexOf('\\') + 1)})}"
+                           target="_blank"
+                           class="doc-link">Lihat</a>
+                    </div>
+
+                    <!-- STNK -->
+                    <div class="doc-item">
+                        <div class="doc-thumbnail">
+                            <img th:if="${app.stnkPath != null}"
+                                 th:src="@{/uploads/{file}(file=${app.photoPath})}"
+                                 alt="STNK"
+                                 style="width:100%; height:100%; object-fit: cover;">
+                            <span th:unless="${app.stnkPath != null}">Tidak ada</span>
+                        </div>
+                        <div class="doc-label">STNK</div>
+                        <a th:if="${app.stnkPath != null}"
+                           th:href="@{/uploads/{file}(file=${app.stnkPath.substring(app.stnkPath.lastIndexOf('\\') + 1)})}"
+                           target="_blank"
+                           class="doc-link">Lihat</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="app-actions">
+                <!-- Approve Button -->
+                <form th:action="@{'/drivers/applications/' + ${app.id} + '/approve'}" method="post">
+                    <button type="submit" class="btn-primary btn-approve">✓ Terima</button>
+                </form>
+
+                <!-- Reject Button with Reason Input -->
+                <form th:action="@{'/drivers/applications/' + ${app.id} + '/reject'}" method="post" style="display: flex; gap: 0.5rem; flex: 1;">
+                    <input type="text"
+                           name="rejectionReason"
+                           placeholder="Alasan penolakan (opsional)"
+                           aria-label="Alasan penolakan aplikasi"
+                           style="flex: 1;">
+                    <button type="submit" class="btn-primary btn-reject-reason">✗ Tolak</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Go<span>Aja</span></div>
+        <p class="footer-copy">&copy; 2026 GoAja Spring. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    // NavToggle
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('open');
+            navToggle.setAttribute('aria-expanded', navLinks.classList.contains('open'));
+        });
+    }
+
+    // Scroll Reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const revealOnScroll = () => {
+        reveals.forEach(el => {
+            const top = el.getBoundingClientRect().top;
+            if (top < window.innerHeight - 100) el.classList.add('visible');
+        });
+    };
+    window.addEventListener('scroll', revealOnScroll);
+    revealOnScroll();
+</script>
+
 </body>
 </html>

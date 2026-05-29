@@ -90,8 +90,31 @@ public class DriverApplicationController {
     @GetMapping("/drivers/applications")
     public String listApplications(Model model) {
         List<DriverApplication> list = appRepo.findByStatus("PENDING");
+
+        // Extract filenames untuk display di template
+        for (DriverApplication app : list) {
+            if (app.getPhotoPath() != null) {
+                app.setPhotoPath(getFilename(app.getPhotoPath()));
+            }
+            if (app.getKtpPath() != null) {
+                app.setKtpPath(getFilename(app.getKtpPath()));
+            }
+            if (app.getSimPath() != null) {
+                app.setSimPath(getFilename(app.getSimPath()));
+            }
+            if (app.getStnkPath() != null) {
+                app.setStnkPath(getFilename(app.getStnkPath()));
+            }
+        }
+
         model.addAttribute("applications", list);
         return "drivers_applications";
+    }
+
+    private String getFilename(String path) {
+        if (path == null) return null;
+        int lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        return lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
     }
 
     // Admin approve
@@ -123,20 +146,25 @@ public class DriverApplicationController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Gagal approve: " + e.getMessage());
         }
-        return "redirect:/drivers";
+        return "redirect:/drivers/applications";
     }
 
     @PostMapping("/drivers/applications/{id}/reject")
-    public String reject(@PathVariable Long id, RedirectAttributes ra) {
+    public String reject(@PathVariable Long id,
+                         @RequestParam(value = "rejectionReason", required = false) String reason,
+                         RedirectAttributes ra) {
         var opt = appRepo.findById(id);
         if (opt.isEmpty()) {
             ra.addFlashAttribute("error", "Aplikasi tidak ditemukan");
-            return "redirect:/drivers";
+            return "redirect:/drivers/applications";
         }
         DriverApplication app = opt.get();
         app.setStatus("REJECTED");
+        if (reason != null && !reason.isBlank()) {
+            app.setRejectionReason(reason);
+        }
         appRepo.save(app);
         ra.addFlashAttribute("success", "Aplikasi ditolak.");
-        return "redirect:/drivers";
+        return "redirect:/drivers/applications";
     }
 }

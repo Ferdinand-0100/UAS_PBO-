@@ -28,6 +28,8 @@ public class DriverApplication {
 
     private LocalDateTime createdAt;
 
+    private String rejectionReason; // alasan penolakan jika status = REJECTED
+
     public DriverApplication() {}
 
     // ---- getters & setters ----
@@ -73,4 +75,7 @@ public class DriverApplication {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 }
