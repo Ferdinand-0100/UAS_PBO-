@@ -37,6 +37,21 @@ public class PageController {
     /* DASHBOARD — GET */
     @GetMapping("/")
     public String dashboard(Model model, Authentication authentication) {
+        if (authentication != null) {
+            var authorities = authentication.getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                String full = authorities.iterator().next().getAuthority();
+                if (full != null) {
+                    String role = full.startsWith("ROLE_") ? full.substring(5) : full;
+                    if ("DRIVER".equals(role)) {
+                        return "redirect:/orders";
+                    } else if ("ADMIN".equals(role)) {
+                        return "redirect:/layanan";
+                    }
+                }
+            }
+        }
+
         model.addAttribute("layananList", layananService.getAllLayanan());
         model.addAttribute("orderCount",  orderService.getAllOrders().size());
         model.addAttribute("driverCount", driverService.getAllDrivers().size());
@@ -172,6 +187,23 @@ public class PageController {
                               @RequestParam double jarak,
                               RedirectAttributes ra,
                               Authentication authentication) {
+
+        if (authentication != null) {
+            var authorities = authentication.getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                String full = authorities.iterator().next().getAuthority();
+                if (full != null) {
+                    String role = full.startsWith("ROLE_") ? full.substring(5) : full;
+                    if ("DRIVER".equals(role)) {
+                        ra.addFlashAttribute("error", "Gagal membuat pesanan: Driver tidak diperbolehkan membuat pesanan.");
+                        return "redirect:/orders";
+                    } else if ("ADMIN".equals(role)) {
+                        ra.addFlashAttribute("error", "Gagal membuat pesanan: Admin tidak diperbolehkan membuat pesanan.");
+                        return "redirect:/layanan";
+                    }
+                }
+            }
+        }
 
         try {
             List<Layanan> layananList = layananService.getAllLayanan();

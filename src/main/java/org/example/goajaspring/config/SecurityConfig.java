@@ -23,10 +23,10 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/signup", "/api/public/**", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                         // driver application endpoints (authenticated users can apply)
                         .requestMatchers("/driver/apply", "/driver/submit").authenticated()
-                        // ADMIN may only access drivers and layanan pages
-                        .requestMatchers("/drivers", "/drivers/**", "/layanan", "/layanan/**").hasRole("ADMIN")
+                        // ADMIN may only access layanan pages
+                        .requestMatchers("/layanan/**", "/layanan").hasRole("ADMIN")
                         // Orders and Drivers pages restricted to DRIVER role only (not ADMIN)
-                        .requestMatchers("/orders", "/orders/**", "/api/orders/**").hasRole("DRIVER")
+                        .requestMatchers("/orders/**", "/api/orders/**", "/drivers/**", "/drivers/applications/**").hasRole("DRIVER")
                         // dashboard and other authenticated pages
                         .requestMatchers("/").authenticated()
                         .anyRequest().authenticated()
