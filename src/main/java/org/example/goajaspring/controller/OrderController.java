@@ -31,4 +31,8 @@ public class OrderController {
 
         return orderService.acceptOrder(orderId, driverId);
     }
+    @GetMapping("/{id}")
+    public Order getOrderById(@PathVariable Long id) {
+        return orderService.getOrderById(id);
+    }
 }
