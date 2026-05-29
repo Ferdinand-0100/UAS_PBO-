@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<html lang="id" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tracking Pesanan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared.css}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -17,73 +21,61 @@
         }
 
         .info-panel {
-            background: white;
+            background: rgba(250,250,250,0.05);
             padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--border);
             height: fit-content;
         }
 
         .info-panel h1 {
             margin-top: 0;
-            color: #333;
-            border-bottom: 2px solid #007bff;
+            color: var(--fg);
+            border-bottom: 2px solid var(--accent);
             padding-bottom: 1rem;
+            font-size: 1.8rem;
         }
 
         .status-badge {
             display: inline-block;
             padding: 0.5rem 1rem;
-            border-radius: 20px;
             font-weight: 600;
             margin-bottom: 1rem;
             font-size: 0.9rem;
+            border: 2px solid var(--border);
+            color: var(--fg);
         }
 
-        .status-active {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .status-pending {
-            background: #FF9800;
-            color: white;
-        }
-
-        .status-completed {
-            background: #2196F3;
-            color: white;
-        }
+        .status-active { border-color: #4ade80; color: #4ade80; }
+        .status-pending { border-color: #facc15; color: #facc15; }
+        .status-completed { border-color: var(--accent); color: var(--accent); }
 
         .info-group {
             margin-bottom: 1.5rem;
             padding-bottom: 1.5rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border);
         }
 
-        .info-group:last-child {
-            border-bottom: none;
-        }
+        .info-group:last-child { border-bottom: none; }
 
         .info-label {
-            font-size: 0.85rem;
-            color: #999;
-            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--muted-fg);
+            font-weight: 700;
             text-transform: uppercase;
             margin-bottom: 0.5rem;
+            letter-spacing: 0.1em;
         }
 
         .info-value {
             font-size: 1rem;
-            color: #333;
+            color: var(--fg);
             font-weight: 500;
             word-break: break-word;
         }
 
         .map-wrapper {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: rgba(250,250,250,0.05);
+            border: 2px solid var(--border);
             overflow: hidden;
         }
 
@@ -95,12 +87,12 @@
         .loading {
             text-align: center;
             padding: 2rem;
-            color: #666;
+            color: var(--muted-fg);
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--accent);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -114,21 +106,20 @@
         }
 
         .error {
-            background: #f8d7da;
-            color: #721c24;
+            background: rgba(222,49,99,0.15);
+            color: var(--accent);
             padding: 1rem;
-            border-radius: 4px;
+            border: 2px solid var(--accent);
             margin-bottom: 1rem;
         }
 
         .driver-info {
-            background: #f0f8ff;
+            background: rgba(250,250,250,0.02);
             padding: 1rem;
-            border-left: 4px solid #2196F3;
-            border-radius: 4px;
+            border-left: 4px solid var(--accent);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .track-container {
                 grid-template-columns: 1fr;
             }
@@ -140,10 +131,33 @@
     </style>
 </head>
 <body>
-<div class="track-container">
+
+<!-- NAVBAR -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-brand" href="/">Go<span>Aja</span></a>
+    <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="/">Beranda</a></li>
+        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
+            <a href="/orders">Pesanan</a>
+        </li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
+        <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
+    </ul>
+    <div class="nav-right">
+        <span class="nav-user" sec:authentication="name">User</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Keluar</button>
+        </form>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<section class="track-container" aria-label="Tracking pesanan">
     <!-- Info Panel -->
     <div class="info-panel">
-        <h1>🚗 Tracking</h1>
+        <h1>🚗 Pelacakan</h1>
         <div id="content">
             <div class="loading">
                 <div class="spinner"></div>
@@ -156,11 +170,26 @@
     <div class="map-wrapper">
         <div id="trackingMap"></div>
     </div>
-</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Go<span>Aja</span></div>
+        <p class="footer-copy">&copy; 2025 GoAja &mdash; UAS Pemrograman Berorientasi Objek</p>
+    </div>
+</footer>
 
 <!-- Library -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    // Nav toggle
+    document.getElementById('navToggle').addEventListener('click', function() {
+        const nl = document.getElementById('navLinks');
+        const open = nl.classList.toggle('open');
+        this.setAttribute('aria-expanded', open);
+    });
+
     const orderId = /*[[${orderId}]]*/ 0;
     const config = {
         map: null,
@@ -190,15 +219,15 @@
 
         let color, label, icon;
         if (type === 'pickup') {
-            color = 'green';
+            color = '#10b981';
             label = 'A';
             icon = '📍';
         } else if (type === 'destination') {
-            color = 'red';
+            color = '#DE3163';
             label = 'B';
             icon = '📌';
         } else {
-            color = 'blue';
+            color = '#3b82f6';
             label = '🚗';
             icon = '🚗';
         }
@@ -229,7 +258,7 @@
             [pickupLat, pickupLng],
             [destLat, destLng]
         ], {
-            color: '#2196F3',
+            color: '#DE3163',
             weight: 3,
             opacity: 0.5,
             dashArray: '5, 5'
@@ -253,13 +282,12 @@
     function updateUI(data) {
         const statusClass = {
             'PENDING': 'status-pending',
-            'ACCEPTED': 'status-active',
-            'ARRIVED': 'status-active',
-            'COMPLETED': 'status-completed'
+            'DIJEMPUT': 'status-active',
+            'SELESAI': 'status-completed'
         }[data.status] || 'status-pending';
 
         document.getElementById('content').innerHTML = `
-            <div class="status-badge ${statusClass}">${data.status || 'Unknown'}</div>
+            <div class="status-badge ${statusClass}">${data.status || 'Tidak diketahui'}</div>
 
             <div class="info-group driver-info">
                 <div class="info-label">📍 Lokasi Driver</div>
@@ -319,5 +347,6 @@
         loadOrderDetails();
     });
 </script>
+
 </body>
 </html>

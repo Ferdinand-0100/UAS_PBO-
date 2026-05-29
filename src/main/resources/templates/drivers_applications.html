@@ -199,10 +199,13 @@
 
     <ul class="nav-links" id="navLinks" role="list">
         <li><a href="/">Beranda</a></li>
-        <li><a href="/orders">Pesanan</a></li>
-        <li><a href="/drivers/applications">Aplikasi Driver</a></li>
-        <li><a href="/drivers">Driver</a></li>
-        <li><a href="/layanan">Layanan</a></li>
+        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
+            <a href="/orders">Pesanan</a>
+        </li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers/applications">Aplikasi Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
+        <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
     </ul>
 
     <div class="nav-right">
