@@ -27,6 +27,8 @@ public class SecurityConfig {
                         .requestMatchers("/layanan/**", "/layanan").hasRole("ADMIN")
                         // Orders and Drivers pages restricted to DRIVER role only (not ADMIN)
                         .requestMatchers("/orders/**", "/api/orders/**", "/drivers/**", "/drivers/applications/**").hasRole("DRIVER")
+                        // Only users can submit orders
+                        .requestMatchers("/order/submit").hasRole("USER")
                         // dashboard and other authenticated pages
                         .requestMatchers("/").authenticated()
                         .anyRequest().authenticated()

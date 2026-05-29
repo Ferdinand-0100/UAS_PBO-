@@ -34,11 +34,11 @@
 <nav class="site-nav" role="navigation" aria-label="Main navigation">
     <a class="nav-brand" href="/">Go<span>Aja</span></a>
     <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/" th:classappend="${#httpServletRequest.requestURI == '/' ? 'active' : ''}">Beranda</a></li>
+        <li><a href="/" class="">Beranda</a></li>
 
         <!-- Pesanan visible untuk DRIVER & ADMIN -->
         <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
-            <a href="/orders" th:classappend="${#httpServletRequest.requestURI == '/orders' ? 'active' : ''}">Pesanan</a>
+            <a href="/orders" th:classappend="${currentRole != null ? 'active' : ''}">Pesanan</a>
         </li>
 
         <!-- Link Driver dan Layanan hanya untuk ADMIN -->
@@ -63,7 +63,6 @@
         <p class="page-eyebrow">Manajemen</p>
         <h1 class="page-title">Pesanan</h1>
     </div>
-    <a href="/" class="btn-primary">+ Buat Pesanan Baru</a>
 </div>
 
 <!-- FLASH MESSAGES -->
@@ -79,7 +78,6 @@
     <div th:if="${#lists.isEmpty(orders)}" class="empty-state reveal">
         <div class="empty-state-num" aria-hidden="true">0</div>
         <p class="empty-state-msg">Belum ada pesanan</p>
-        <a href="/" class="btn-primary">Buat Pesanan Pertama</a>
     </div>
 
     <!-- Table -->
