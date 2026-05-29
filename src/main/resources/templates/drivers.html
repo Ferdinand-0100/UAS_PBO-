@@ -15,22 +15,18 @@
 <!-- NAVBAR -->
 <nav class="site-nav" role="navigation" aria-label="Main navigation">
     <a class="nav-brand" href="/">Go<span>Aja</span></a>
+
     <ul class="nav-links" id="navLinks" role="list">
         <li><a href="/">Beranda</a></li>
 
-        <!-- Pesanan visible untuk DRIVER & ADMIN -->
-        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
-            <a href="/orders">Pesanan</a>
-        </li>
+        <li><a href="/orders">Pesanan</a></li>
 
-        <!-- Link Driver dan Layanan hanya untuk ADMIN -->
         <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
         <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
 
-
-        <!-- Untuk USER tampilkan pilihan Gabung jadi Driver -->
         <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
     </ul>
+
     <div class="nav-right">
         <span class="nav-user" sec:authentication="name">User</span>
         <form th:action="@{/logout}" method="post">

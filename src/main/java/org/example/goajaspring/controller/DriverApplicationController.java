@@ -78,7 +78,9 @@ public class DriverApplicationController {
 
     private String storeFile(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) return null;
-        String filename = System.currentTimeMillis() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
+        String original = file.getOriginalFilename();
+        String safeName = (original != null) ? StringUtils.cleanPath(original) : "file";
+        String filename = System.currentTimeMillis() + "_" + safeName;
         Path dest = uploadRoot.resolve(filename);
         Files.copy(file.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
         return dest.toString();

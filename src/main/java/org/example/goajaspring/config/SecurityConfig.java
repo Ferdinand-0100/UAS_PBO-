@@ -19,31 +19,19 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        // resources + public endpoints
-                        .requestMatchers("/login", "/signup", "/api/public/**", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
-                        // driver application endpoints (authenticated users can apply)
-                        .requestMatchers("/driver/apply", "/driver/submit").authenticated()
-                        // ADMIN may only access layanan pages
-                        .requestMatchers("/layanan/**", "/layanan").hasRole("ADMIN")
-                        // Orders and Drivers pages restricted to DRIVER role only (not ADMIN)
-                        .requestMatchers("/orders/**", "/api/orders/**", "/drivers/**", "/drivers/applications/**").hasRole("DRIVER")
-                        // dashboard and other authenticated pages
-                        .requestMatchers("/").authenticated()
+                        .requestMatchers("/login", "/signup", "/css/**", "/images/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/driver/apply", "/driver/submit").authenticated() // USER can access apply
+                        .requestMatchers("/drivers/applications/**", "/admin/**", "/drivers/**", "/layanan/**").hasRole("ADMIN")
+                        .requestMatchers("/orders/**", "/api/orders/**").hasAnyRole("USER","DRIVER","ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/login?error")
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
-                );
+                        .loginPage("/login").permitAll()
+                        .defaultSuccessUrl("/", true))
+                .logout(logout -> logout.logoutSuccessUrl("/login?logout").permitAll());
 
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
-        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**", "/api/orders/**"));
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"));
 
         return http.build();
     }
