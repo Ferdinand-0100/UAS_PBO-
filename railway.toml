@@ -1,8 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "./mvnw -B -DskipTests clean package"
 
 [deploy]
-startCommand = "java -jar target/goaja-spring-0.0.1-SNAPSHOT.jar"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
