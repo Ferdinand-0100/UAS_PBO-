@@ -1,8 +1,11 @@
 package org.example.goajaspring.model;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
+@DiscriminatorValue("DRIVER")
 public class Driver extends User{
     private String kendaraan;
     @Column(unique = true)

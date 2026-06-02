@@ -18,4 +18,6 @@ public interface OrderService {
     Order driverArrived(Long orderId);
 
     Order getOrderById(Long orderId);
+
+    Order updateOrderStatus(Long orderId, String status);
 }

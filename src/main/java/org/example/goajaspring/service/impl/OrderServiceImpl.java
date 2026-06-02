@@ -117,6 +117,24 @@ public class OrderServiceImpl implements OrderService{
                 .orElseThrow(() -> new RuntimeException("Order tidak ditemukan"));
     }
 
+    @Override
+    public Order updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order tidak ditemukan"));
+        order.setStatus(status);
+
+        // Jika status SELESAI, set driver available
+        if ("SELESAI".equals(status)) {
+            Driver driver = order.getDriver();
+            if (driver != null) {
+                driver.setAvailable(true);
+                driverRepository.save(driver);
+            }
+        }
+
+        return orderRepository.save(order);
+    }
+
     // Haversine formula
     private double distanceInKm(double lat1, double lon1, double lat2, double lon2) {
         final int R = 6371; // Radius Earth km

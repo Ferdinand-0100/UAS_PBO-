@@ -3,15 +3,32 @@ package org.example.goajaspring.controller;
 import org.example.goajaspring.model.Order;
 import org.example.goajaspring.service.OrderService;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+import org.example.goajaspring.model.Driver;
+import org.example.goajaspring.repository.DriverRepository;
+import org.example.goajaspring.repository.OrderRepository;
+import org.example.goajaspring.repository.UserRepository;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.example.goajaspring.model.User;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderRestController {
 
     private final OrderService orderService;
+    private final DriverRepository driverRepository;
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
-    public OrderRestController(OrderService orderService) {
+    public OrderRestController(OrderService orderService,
+                               DriverRepository driverRepository,
+                               OrderRepository orderRepository,
+                               UserRepository userRepository) {
         this.orderService = orderService;
+        this.driverRepository = driverRepository;
+        this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/{id}/location")
@@ -50,6 +67,37 @@ public class OrderRestController {
         t.setEtaMinutes(o.getEstimatedArrivalMinutes());
         t.setStatus(o.getStatus());
         return t;
+    }
+
+    @PostMapping("/{id}/accept")
+    public Order acceptOrderSimple(@PathVariable Long id,
+                                   @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new RuntimeException("Driver tidak ter-autentikasi");
+        }
+
+        // Query DriverRepository directly instead of UserRepository
+        Driver driver = driverRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Driver tidak ditemukan: " + userDetails.getUsername()));
+
+        if (!driver.isAvailable()) {
+            throw new RuntimeException("Driver sedang tidak tersedia");
+        }
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order tidak ditemukan"));
+
+        order.setDriver(driver);
+        order.setStatus("DIJEMPUT");
+        driver.setAvailable(false);
+        driverRepository.save(driver);
+
+        return orderRepository.save(order);
+    }
+
+    @PostMapping("/{id}/update-status")
+    public Order updateOrderStatusEndpoint(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        return orderService.updateOrderStatus(id, payload.get("status"));
     }
 
     // DTOs

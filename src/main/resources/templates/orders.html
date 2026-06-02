@@ -27,6 +27,253 @@
             }
             .accept-form input[type="number"]:focus { border-color: var(--accent); }
             .harga { font-variant-numeric: tabular-nums; }
+
+            /* ═══════════════════════════════════════
+               MODAL: Driver Matched (Bouncy Style)
+            ═══════════════════════════════════════ */
+
+            @keyframes bounceIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.7);
+                }
+                50% {
+                    opacity: 1;
+                    transform: scale(1.08);
+                }
+                75% {
+                    transform: scale(0.95);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            @keyframes bounceOut {
+                0% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                25% {
+                    transform: scale(1.05);
+                }
+                100% {
+                    opacity: 0;
+                    transform: scale(0.7);
+                }
+            }
+
+            .driver-matched-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.65);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 9998;
+                animation: fadeIn 0.3s ease;
+            }
+
+            .driver-matched-modal.show {
+                display: flex;
+            }
+
+            .driver-matched-modal.hide {
+                animation: fadeOut 0.3s ease;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+
+            .driver-matched-content {
+                background: var(--bg-glass);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                padding: 3rem 2.5rem;
+                text-align: center;
+                max-width: 420px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+                animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            }
+
+            .driver-matched-modal.hide .driver-matched-content {
+                animation: bounceOut 0.4s ease forwards;
+            }
+
+            .driver-matched-title {
+                font-size: 2.2rem;
+                font-weight: 700;
+                letter-spacing: -0.02em;
+                color: var(--accent);
+                margin-bottom: 0.75rem;
+                text-transform: uppercase;
+            }
+
+            .driver-matched-subtitle {
+                font-size: 1rem;
+                font-weight: 500;
+                letter-spacing: 0.05em;
+                color: var(--muted-fg);
+                margin-bottom: 2rem;
+                line-height: 1.6;
+            }
+
+            .driver-matched-buttons {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .driver-matched-buttons button {
+                flex: 1;
+                min-width: 140px;
+                padding: 0.85rem 2rem;
+                border: none;
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                cursor: pointer;
+                border-radius: 0;
+                transition: all 0.2s ease;
+            }
+
+            .driver-matched-buttons .btn-track {
+                background: var(--accent);
+                color: var(--accent-fg);
+                border: 2px solid var(--accent);
+            }
+
+            .driver-matched-buttons .btn-track:hover {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+
+            .driver-matched-buttons .btn-track:active {
+                transform: scale(0.95);
+            }
+
+            .driver-matched-buttons .btn-close {
+                background: transparent;
+                color: var(--muted-fg);
+                border: 2px solid var(--border);
+            }
+
+            .driver-matched-buttons .btn-close:hover {
+                background: var(--fg);
+                color: var(--bg);
+                border-color: var(--fg);
+            }
+
+            .driver-matched-buttons .btn-close:active {
+                transform: scale(0.95);
+            }
+
+                        /* ═══════════════════════════════════════
+               MODAL: Confirm (Custom, bukan browser default)
+            ═══════════════════════��═══════════════ */
+
+            .confirm-modal-backdrop,
+            .error-modal-backdrop {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.65);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 9998;
+            }
+
+            .confirm-modal-backdrop.show,
+            .error-modal-backdrop.show {
+                display: flex;
+                animation: fadeIn 0.3s ease;
+            }
+
+            .confirm-modal-backdrop.hide,
+            .error-modal-backdrop.hide {
+                animation: fadeOut 0.3s ease;
+            }
+
+            .confirm-modal-content,
+            .error-modal-content {
+                background: var(--bg-glass);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                padding: 2.5rem;
+                text-align: center;
+                max-width: 450px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+                animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            }
+
+            .confirm-modal-backdrop.hide .confirm-modal-content,
+            .error-modal-backdrop.hide .error-modal-content {
+                animation: bounceOut 0.4s ease forwards;
+            }
+
+            .confirm-modal-message,
+            .error-modal-message {
+                font-size: 1rem;
+                font-weight: 500;
+                letter-spacing: 0.05em;
+                color: var(--muted-fg);
+                margin-bottom: 2rem;
+                line-height: 1.6;
+            }
+
+            .error-modal-title {
+                font-size: 1.4rem;
+                font-weight: 700;
+                letter-spacing: -0.02em;
+                color: var(--accent);
+                margin-bottom: 0.75rem;
+                text-transform: uppercase;
+            }
+
+            .confirm-modal-buttons,
+            .error-modal-buttons {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+                .confirm-modal-buttons button {
+                flex: 1;
+                min-width: 120px;
+                max-width: 180px;
+                padding: 0.75rem 1.5rem;
+                border: none;
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 0.75rem;
+                font-weight: 700;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                cursor: pointer;
+                border-radius: 0;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+                text-align: center;
+            }
         </style>
     </head>
 <body>
@@ -35,19 +282,18 @@
 <nav class="site-nav" role="navigation" aria-label="Main navigation">
     <a class="nav-brand" href="/">Go<span>Aja</span></a>
     <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/" class="">Beranda</a></li>
-
-        <!-- Pesanan visible untuk DRIVER & ADMIN -->
-        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
-            <a href="/orders" th:classappend="${currentRole != null ? 'active' : ''}">Pesanan</a>
-        </li>
-
-        <!-- Link Driver dan Layanan hanya untuk ADMIN -->
+        <!-- ADMIN: Driver, Aplikasi Driver, Layanan -->
         <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers/applications">Aplikasi Driver</a></li>
         <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
 
-        <!-- Untuk USER tampilkan pilihan Gabung jadi Driver -->
+        <!-- USER: Beranda, Pesanan, Gabung jadi Driver -->
+        <li th:if="${currentRole == 'USER'}"><a href="/">Beranda</a></li>
+        <li th:if="${currentRole == 'USER'}"><a href="/orders">Pesanan</a></li>
         <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
+
+        <!-- DRIVER: Hanya Pesanan -->
+        <li th:if="${currentRole == 'DRIVER'}"><a href="/orders">Pesanan</a></li>
     </ul>
 
     <div class="nav-right">
@@ -95,9 +341,11 @@
                     <th>Total Harga</th>
                     <th class="status-col">Status</th>
                     <th>Driver</th>
-                    <th class="actions-col">Aksi</th>
+                    <!-- Aksi column hanya tampil untuk DRIVER -->
+                    <th class="actions-col" th:if="${currentRole == 'DRIVER'}">Aksi</th>
                 </tr>
             </thead>
+
             <tbody>
                 <tr th:each="order : ${orders}">
                     <td th:text="${order.id}">1</td>
@@ -115,50 +363,49 @@
                               th:text="${order.status}">—</span>
                     </td>
                     <td th:text="${order.driver != null ? order.driver.nama : '—'}">—</td>
-                    <td>
-                        <!-- Only show accept form if status is MENUNGGU -->
-                        <form th:if="${order.status == 'MENUNGGU'}"
-                              th:action="@{/orders/{id}/accept/{did}(id=${order.id}, did=0)}"
-                              method="post"
-                              class="accept-form"
-                              th:id="'form-' + ${order.id}">
-                            <input type="number"
-                                   name="driverId"
-                                   placeholder="ID Driver"
-                                   min="1"
-                                   required
-                                   aria-label="ID Driver untuk order ini"
-                                   th:id="'driver-input-' + ${order.id}">
-                            <button type="button"
-                                    class="btn-primary btn-sm"
-                                    th:onclick="'submitAccept(' + ${order.id} + ')'">
-                                Terima
-                            </button>
-                        </form>
-
-                        <!-- Tombol Tandai Sampai: tampil hanya jika order sedang DIJEMPUT dan current user role DRIVER -->
-                        <button th:if="${order.status == 'DIJEMPUT' and currentRole == 'DRIVER'}"
+                    <!-- AKSI COLUMN: Hanya untuk DRIVER -->
+                    <td th:if="${currentRole == 'DRIVER'}">
+                        <!-- STATUS MENUNGGU: Button TERIMA (tanpa input) -->
+                        <button th:if="${order.status == 'MENUNGGU'}"
                                 type="button"
-                                class="btn-outline"
-                                th:onclick="'markArrived(' + ${order.id} + ')'">
-                            Tandai Sampai
+                                class="btn-primary btn-sm"
+                                th:onclick="'acceptOrder(' + ${order.id} + ')'">
+                            Terima
                         </button>
 
-                        <a th:if="${order.status != 'MENUNGGU'}"
-                           th:href="@{/track/{id}(id=${order.id})}"
-                           class="btn-outline">
-                            Lacak
-                        </a>
+                        <!-- STATUS DIJEMPUT: Button JALAN -->
+                        <button th:if="${order.status == 'DIJEMPUT'}"
+                                type="button"
+                                class="btn-primary btn-sm"
+                                th:onclick="'updateOrder(' + ${order.id} + ', &quot;SELESAI&quot;)'">
+                            Jalan
+                        </button>
 
-                        <span th:unless="${order.status == 'MENUNGGU'}"
-                              style="font-size:0.75rem; color: var(--muted-fg); text-transform:uppercase; letter-spacing:0.1em;">
-                        </span>
+                        <!-- STATUS SELESAI: Button disabled (info) -->
+                        <button th:if="${order.status == 'SELESAI'}"
+                                type="button"
+                                class="btn-outline btn-sm"
+                                disabled>
+                            Selesai
+                        </button>
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
 </main>
+
+<!-- MODAL: Driver Matched (untuk USER) -->
+<div class="driver-matched-modal" id="driverMatchedModal">
+    <div class="driver-matched-content">
+        <div class="driver-matched-title">BERHASIL DAPAT DRIVER</div>
+        <div class="driver-matched-subtitle">Segera pantau dan tunggu drivernya ya!</div>
+        <div class="driver-matched-buttons">
+            <button type="button" class="btn-track" id="btnPantau">Pantau</button>
+            <button type="button" class="btn-close" id="btnSip">SIP!</button>
+        </div>
+    </div>
+</div>
 
 <!-- FOOTER -->
 <footer class="site-footer">
@@ -168,7 +415,7 @@
     </div>
 </footer>
 
-<script>
+<script th:inline="javascript">
     // Nav toggle
     document.getElementById('navToggle').addEventListener('click', function() {
         const nl = document.getElementById('navLinks');
@@ -182,29 +429,192 @@
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-    // Accept order — reads driver ID from input, then submits to correct URL
-    function submitAccept(orderId) {
-        const input = document.getElementById('driver-input-' + orderId);
-        const driverId = input.value;
-        if (!driverId || driverId < 1) {
-            input.focus();
-            return;
-        }
-        const form = document.getElementById('form-' + orderId);
-        form.action = '/orders/' + orderId + '/accept/' + driverId;
-        form.submit();
+        // ===== MODAL CONFIRM (Custom, bukan browser default) =====
+    function showConfirmModal(message, onConfirm) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'confirm-modal-backdrop show';
+
+        const content = document.createElement('div');
+        content.className = 'confirm-modal-content';
+        content.innerHTML = `
+            <div class="confirm-modal-message">${message}</div>
+            <div class="confirm-modal-buttons">
+                <button type="button" class="btn-outline confirm-btn-cancel" id="confirmCancel">Batal</button>
+                <button type="button" class="btn-primary confirm-btn-ok" id="confirmOk">Ya, Lanjutkan</button>
+            </div>
+        `;
+
+        backdrop.appendChild(content);
+        document.body.appendChild(backdrop);
+
+        const confirmOk = backdrop.querySelector('#confirmOk');
+        const confirmCancel = backdrop.querySelector('#confirmCancel');
+
+        const closeModal = () => {
+            backdrop.classList.add('hide');
+            setTimeout(() => backdrop.remove(), 300);
+        };
+
+        confirmOk.onclick = () => {
+            closeModal();
+            onConfirm && onConfirm();
+        };
+
+        confirmCancel.onclick = closeModal;
+
+        backdrop.onclick = (e) => {
+            if (e.target === backdrop) closeModal();
+        };
     }
 
-    function markArrived(orderId) {
-        fetch('/api/orders/' + orderId + '/arrived', { method: 'POST' })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Gagal menandai pesanan sampai');
-                }
-                window.location.reload();
-            })
-            .catch(error => alert(error.message));
+    // ===== MODAL ERROR =====
+    function showErrorModal(message) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'error-modal-backdrop show';
+
+        const content = document.createElement('div');
+        content.className = 'error-modal-content';
+        content.innerHTML = `
+            <div class="error-modal-title">⚠ Error</div>
+            <div class="error-modal-message">${message}</div>
+            <div class="error-modal-buttons">
+                <button type="button" class="btn-primary" id="errorOk">Mengerti</button>
+            </div>
+        `;
+
+        backdrop.appendChild(content);
+        document.body.appendChild(backdrop);
+
+        const errorOk = backdrop.querySelector('#errorOk');
+
+        const closeModal = () => {
+            backdrop.classList.add('hide');
+            setTimeout(() => backdrop.remove(), 300);
+        };
+
+        errorOk.onclick = closeModal;
+        backdrop.onclick = (e) => {
+            if (e.target === backdrop) closeModal();
+        };
     }
+
+    // ===== DRIVER: Accept order (MENUNGGU → DIJEMPUT) dengan konfirmasi modal =====
+    function acceptOrder(orderId) {
+        showConfirmModal('Terima pesanan ini?', () => {
+            fetch('/api/orders/' + orderId + '/accept', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(text || 'Gagal menerima pesanan');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorModal('Gagal menerima pesanan: ' + error.message);
+            });
+        });
+    }
+
+    // ===== DRIVER: Update order status (DIJEMPUT → SELESAI) =====
+    function updateOrder(orderId, newStatus) {
+        const msg = newStatus === 'SELESAI' ? 'Tandai pesanan sebagai selesai?' : 'Mulai perjalanan?';
+        if (confirm(msg)) {
+            fetch('/api/orders/' + orderId + '/update-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Gagal memperbarui status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan');
+            });
+        }
+    }
+
+        // ===== USER: Show "Berhasil Dapat Driver" modal (with bouncy animation) =====
+    window.showDriverMatchedModal = function(orderId) {
+        const modal = document.getElementById('driverMatchedModal');
+        const btnPantau = document.getElementById('btnPantau');
+        const btnSip = document.getElementById('btnSip');
+
+        // Reset animation state
+        modal.classList.remove('hide');
+        modal.classList.add('show');
+
+        btnPantau.onclick = () => {
+            modal.classList.add('hide');
+            setTimeout(() => {
+                window.location.href = '/track/' + orderId;
+            }, 400);
+        };
+
+        btnSip.onclick = () => {
+            modal.classList.add('hide');
+            setTimeout(() => {
+                modal.classList.remove('show');
+                sessionStorage.setItem('driverMatched_' + orderId, 'shown');
+            }, 400);
+        };
+
+        // Close on backdrop click
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hide');
+                setTimeout(() => {
+                    modal.classList.remove('show');
+                    sessionStorage.setItem('driverMatched_' + orderId, 'shown');
+                }, 400);
+            }
+        };
+
+        // Escape key to close
+        const onEsc = (e) => {
+            if (e.key === 'Escape') {
+                modal.classList.add('hide');
+                setTimeout(() => {
+                    modal.classList.remove('show');
+                    sessionStorage.setItem('driverMatched_' + orderId, 'shown');
+                    document.removeEventListener('keydown', onEsc);
+                }, 400);
+            }
+        };
+        document.addEventListener('keydown', onEsc);
+    };
+
+    // ===== Check if modal should show for USER =====
+    (function() {
+        const currentRole = /*[[${currentRole}]]*/ null;
+        if (currentRole === 'USER') {
+            const orders = /*[[${orders}]]*/ [];
+            // Periksa apakah ada order dengan status DIJEMPUT yang belum ditampilkan modalnya
+            if (orders && orders.length > 0) {
+                orders.forEach(order => {
+                    if (order.status === 'DIJEMPUT') {
+                        const key = 'driverMatched_' + order.id;
+                        if (!sessionStorage.getItem(key)) {
+                            // Modal baru muncul untuk order ini dengan delay
+                            setTimeout(() => {
+                                window.showDriverMatchedModal(order.id);
+                            }, 600);
+                        }
+                    }
+                });
+            }
+        }
+    })();
 </script>
 
 </body>

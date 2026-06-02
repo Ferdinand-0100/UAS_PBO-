@@ -47,7 +47,19 @@ public class DriverApplicationController {
     public String applyForm(Model model, Authentication authentication) {
         model.addAttribute("application", new DriverApplication());
         model.addAttribute("layananList", layananService.getAllLayanan());
-        // set currentRole if needed (or PageController will add)
+
+        String currentRole = "USER";
+        if (authentication != null) {
+            var authorities = authentication.getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                String full = authorities.iterator().next().getAuthority();
+                if (full != null) {
+                    currentRole = full.startsWith("ROLE_") ? full.substring(5) : full;
+                }
+            }
+        }
+        model.addAttribute("currentRole", currentRole);
+
         return "driver_apply";
     }
 
@@ -87,7 +99,7 @@ public class DriverApplicationController {
 
     // Admin: list pending applications
     @GetMapping("/drivers/applications")
-    public String listApplications(Model model) {
+    public String listApplications(Model model, Authentication authentication) {
         List<DriverApplication> list = appRepo.findByStatus("PENDING");
 
         // Extract filenames untuk display di template
@@ -107,13 +119,21 @@ public class DriverApplicationController {
         }
 
         model.addAttribute("applications", list);
-        return "drivers_applications";
-    }
 
-    private String getFilename(String path) {
-        if (path == null) return null;
-        int lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
-        return lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
+        // Add currentRole untuk navbar
+        String currentRole = "USER";
+        if (authentication != null) {
+            var authorities = authentication.getAuthorities();
+            if (authorities != null && !authorities.isEmpty()) {
+                String full = authorities.iterator().next().getAuthority();
+                if (full != null) {
+                    currentRole = full.startsWith("ROLE_") ? full.substring(5) : full;
+                }
+            }
+        }
+        model.addAttribute("currentRole", currentRole);
+
+        return "drivers_applications";
     }
 
     // Admin approve
@@ -167,5 +187,11 @@ public class DriverApplicationController {
         appRepo.save(app);
         ra.addFlashAttribute("success", "Aplikasi ditolak.");
         return "redirect:/drivers/applications";
+    }
+
+    private String getFilename(String path) {
+        if (path == null) return null;
+        int lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        return lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
     }
 }
