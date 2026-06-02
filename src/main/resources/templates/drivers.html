@@ -17,13 +17,12 @@
     <a class="nav-brand" href="/">Go<span>Aja</span></a>
 
     <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/">Beranda</a></li>
+        <li th:if="${currentRole == 'USER'}"><a href="/">Beranda</a></li>
 
         <li><a href="/orders">Pesanan</a></li>
 
-        <li><a href="/drivers/applications">Aplikasi Driver</a></li>
-
         <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers/applications">Aplikasi Driver</a></li>
         <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
 
         <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>

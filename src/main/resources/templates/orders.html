@@ -144,6 +144,12 @@
                             Tandai Sampai
                         </button>
 
+                        <a th:if="${order.status != 'MENUNGGU'}"
+                           th:href="@{/track/{id}(id=${order.id})}"
+                           class="btn-outline">
+                            Lacak
+                        </a>
+
                         <span th:unless="${order.status == 'MENUNGGU'}"
                               style="font-size:0.75rem; color: var(--muted-fg); text-transform:uppercase; letter-spacing:0.1em;">
                         </span>
@@ -187,6 +193,17 @@
         const form = document.getElementById('form-' + orderId);
         form.action = '/orders/' + orderId + '/accept/' + driverId;
         form.submit();
+    }
+
+    function markArrived(orderId) {
+        fetch('/api/orders/' + orderId + '/arrived', { method: 'POST' })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Gagal menandai pesanan sampai');
+                }
+                window.location.reload();
+            })
+            .catch(error => alert(error.message));
     }
 </script>
 

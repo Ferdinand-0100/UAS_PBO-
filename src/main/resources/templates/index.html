@@ -443,6 +443,10 @@
                 <input type="text" id="estimasiHarga"
                        placeholder="Rp 0" readonly aria-readonly="true">
             </div>
+            <input type="hidden" id="lokasiJemputLat" name="lokasiJemputLat">
+            <input type="hidden" id="lokasiJemputLng" name="lokasiJemputLng">
+            <input type="hidden" id="lokasiTujuanLat" name="lokasiTujuanLat">
+            <input type="hidden" id="lokasiTujuanLng" name="lokasiTujuanLng">
             <div class="form-submit-row">
                 <button type="submit" class="btn-primary">Buat Pesanan</button>
                 <button type="reset" class="btn-outline">Reset</button>
@@ -697,6 +701,8 @@
                 calculateRoute();
             });
         }
+        document.getElementById('lokasiJemputLat').value = latlng.lat;
+        document.getElementById('lokasiJemputLng').value = latlng.lng;
         reverseGeocode(latlng, 'pickup');
         calculateRoute();
     }
@@ -711,6 +717,8 @@
                 calculateRoute();
             });
         }
+        document.getElementById('lokasiTujuanLat').value = latlng.lat;
+        document.getElementById('lokasiTujuanLng').value = latlng.lng;
         reverseGeocode(latlng, 'destination');
         // Convert alamat -> koordinat
         function forwardGeocode(address, type) {
@@ -748,6 +756,36 @@
             });
         }
         calculateRoute();
+    }
+
+    function forwardGeocode(address, type) {
+        if (!address || address.trim() === '') return;
+
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+
+        fetch(url, {
+            headers: {
+                'User-Agent': 'GoAja-App'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const result = data[0];
+                const latlng = L.latLng(parseFloat(result.lat), parseFloat(result.lon));
+
+                if (type === 'pickup') {
+                    setPickup(latlng);
+                } else {
+                    setDestination(latlng);
+                }
+
+                map.setView([latlng.lat, latlng.lng], 15);
+            }
+        })
+        .catch(err => {
+            console.error("Forward Geocoding Error:", err);
+        });
     }
 
     function reverseGeocode(latlng, type) {
@@ -884,6 +922,10 @@
             }
 
             nextClickIsPickup = true;
+            document.getElementById('lokasiJemputLat').value = '';
+            document.getElementById('lokasiJemputLng').value = '';
+            document.getElementById('lokasiTujuanLat').value = '';
+            document.getElementById('lokasiTujuanLng').value = '';
 
             updateMapInstruction("PILIH LOKASI PENJEMPUTAN (KLIK DI PETA)");
 

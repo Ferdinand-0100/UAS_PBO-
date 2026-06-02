@@ -31,6 +31,9 @@ public class Order {
     private Double driverLat;
     private Double driverLng;
 
+    private Double userLat;
+    private Double userLng;
+
     private Integer estimatedArrivalMinutes;
 
     public Order() {
@@ -169,6 +172,22 @@ public class Order {
 
     public void setDriverLng(Double driverLng) {
         this.driverLng = driverLng;
+    }
+
+    public Double getUserLat() {
+        return userLat;
+    }
+
+    public void setUserLat(Double userLat) {
+        this.userLat = userLat;
+    }
+
+    public Double getUserLng() {
+        return userLng;
+    }
+
+    public void setUserLng(Double userLng) {
+        this.userLng = userLng;
     }
 
     public Integer getEstimatedArrivalMinutes() {

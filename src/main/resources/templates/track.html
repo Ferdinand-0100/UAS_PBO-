@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<html lang="id" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tracking Pesanan</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared.css}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -21,61 +17,73 @@
         }
 
         .info-panel {
-            background: rgba(250,250,250,0.05);
+            background: white;
             padding: 2rem;
-            border: 2px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             height: fit-content;
         }
 
         .info-panel h1 {
             margin-top: 0;
-            color: var(--fg);
-            border-bottom: 2px solid var(--accent);
+            color: #333;
+            border-bottom: 2px solid #007bff;
             padding-bottom: 1rem;
-            font-size: 1.8rem;
         }
 
         .status-badge {
             display: inline-block;
             padding: 0.5rem 1rem;
+            border-radius: 20px;
             font-weight: 600;
             margin-bottom: 1rem;
             font-size: 0.9rem;
-            border: 2px solid var(--border);
-            color: var(--fg);
         }
 
-        .status-active { border-color: #4ade80; color: #4ade80; }
-        .status-pending { border-color: #facc15; color: #facc15; }
-        .status-completed { border-color: var(--accent); color: var(--accent); }
+        .status-active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-pending {
+            background: #FF9800;
+            color: white;
+        }
+
+        .status-completed {
+            background: #2196F3;
+            color: white;
+        }
 
         .info-group {
             margin-bottom: 1.5rem;
             padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid #eee;
         }
 
-        .info-group:last-child { border-bottom: none; }
+        .info-group:last-child {
+            border-bottom: none;
+        }
 
         .info-label {
-            font-size: 0.75rem;
-            color: var(--muted-fg);
-            font-weight: 700;
+            font-size: 0.85rem;
+            color: #999;
+            font-weight: 600;
             text-transform: uppercase;
             margin-bottom: 0.5rem;
-            letter-spacing: 0.1em;
         }
 
         .info-value {
             font-size: 1rem;
-            color: var(--fg);
+            color: #333;
             font-weight: 500;
             word-break: break-word;
         }
 
         .map-wrapper {
-            background: rgba(250,250,250,0.05);
-            border: 2px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -87,12 +95,12 @@
         .loading {
             text-align: center;
             padding: 2rem;
-            color: var(--muted-fg);
+            color: #666;
         }
 
         .spinner {
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top: 4px solid var(--accent);
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -106,20 +114,21 @@
         }
 
         .error {
-            background: rgba(222,49,99,0.15);
-            color: var(--accent);
+            background: #f8d7da;
+            color: #721c24;
             padding: 1rem;
-            border: 2px solid var(--accent);
+            border-radius: 4px;
             margin-bottom: 1rem;
         }
 
         .driver-info {
-            background: rgba(250,250,250,0.02);
+            background: #f0f8ff;
             padding: 1rem;
-            border-left: 4px solid var(--accent);
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 768px) {
             .track-container {
                 grid-template-columns: 1fr;
             }
@@ -131,33 +140,10 @@
     </style>
 </head>
 <body>
-
-<!-- NAVBAR -->
-<nav class="site-nav" role="navigation" aria-label="Main navigation">
-    <a class="nav-brand" href="/">Go<span>Aja</span></a>
-    <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/">Beranda</a></li>
-        <li th:if="${currentRole == 'DRIVER' or currentRole == 'ADMIN'}">
-            <a href="/orders">Pesanan</a>
-        </li>
-        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
-        <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
-        <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
-    </ul>
-    <div class="nav-right">
-        <span class="nav-user" sec:authentication="name">User</span>
-        <form th:action="@{/logout}" method="post">
-            <button type="submit" class="btn-logout">Keluar</button>
-        </form>
-        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
-    </div>
-</nav>
-
-<!-- MAIN CONTENT -->
-<section class="track-container" aria-label="Tracking pesanan">
+<div class="track-container">
     <!-- Info Panel -->
     <div class="info-panel">
-        <h1>🚗 Pelacakan</h1>
+        <h1>🚗 Tracking</h1>
         <div id="content">
             <div class="loading">
                 <div class="spinner"></div>
@@ -170,36 +156,30 @@
     <div class="map-wrapper">
         <div id="trackingMap"></div>
     </div>
-</section>
-
-<!-- FOOTER -->
-<footer class="site-footer">
-    <div class="footer-inner">
-        <div class="footer-brand">Go<span>Aja</span></div>
-        <p class="footer-copy">&copy; 2025 GoAja &mdash; UAS Pemrograman Berorientasi Objek</p>
-    </div>
-</footer>
+</div>
 
 <!-- Library -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    // Nav toggle
-    document.getElementById('navToggle').addEventListener('click', function() {
-        const nl = document.getElementById('navLinks');
-        const open = nl.classList.toggle('open');
-        this.setAttribute('aria-expanded', open);
-    });
-
+<script th:inline="javascript">
     const orderId = /*[[${orderId}]]*/ 0;
+    const currentRole = /*[[${currentRole}]]*/ 'USER';
     const config = {
         map: null,
         markers: {
             pickup: null,
             destination: null,
-            driver: null
+            driver: null,
+            user: null
+        },
+        labels: {
+            pickup: null,
+            destination: null,
+            driver: null,
+            user: null
         },
         polyline: null,
-        routePolyline: null
+        routePolyline: null,
+        watchId: null
     };
 
     function initializeMap() {
@@ -211,23 +191,30 @@
     }
 
     function updateMarker(type, lat, lng) {
-        if (!lat || !lng) return;
+        if (lat == null || lng == null) return;
 
         if (config.markers[type]) {
             config.map.removeLayer(config.markers[type]);
         }
+        if (config.labels[type]) {
+            config.map.removeLayer(config.labels[type]);
+        }
 
         let color, label, icon;
         if (type === 'pickup') {
-            color = '#10b981';
+            color = 'green';
             label = 'A';
             icon = '📍';
         } else if (type === 'destination') {
-            color = '#DE3163';
+            color = 'red';
             label = 'B';
             icon = '📌';
+        } else if (type === 'user') {
+            color = 'purple';
+            label = 'U';
+            icon = 'U';
         } else {
-            color = '#3b82f6';
+            color = 'blue';
             label = '🚗';
             icon = '🚗';
         }
@@ -241,7 +228,7 @@
             fillOpacity: 0.7
         }).addTo(config.map);
 
-        L.marker([lat, lng], {
+        config.labels[type] = L.marker([lat, lng], {
             icon: L.divIcon({
                 className: 'text-label',
                 html: `<div style="font-size: 24px;">${icon}</div>`
@@ -258,7 +245,7 @@
             [pickupLat, pickupLng],
             [destLat, destLng]
         ], {
-            color: '#DE3163',
+            color: '#2196F3',
             weight: 3,
             opacity: 0.5,
             dashArray: '5, 5'
@@ -281,17 +268,29 @@
 
     function updateUI(data) {
         const statusClass = {
-            'PENDING': 'status-pending',
+            'MENUNGGU': 'status-pending',
             'DIJEMPUT': 'status-active',
-            'SELESAI': 'status-completed'
+            'SAMPAI': 'status-completed'
         }[data.status] || 'status-pending';
 
+        const driverLocation = data.driverLat != null && data.driverLng != null
+            ? `${data.driverLat.toFixed(6)}, ${data.driverLng.toFixed(6)}`
+            : 'Belum tersedia';
+        const userLocation = data.userLat != null && data.userLng != null
+            ? `${data.userLat.toFixed(6)}, ${data.userLng.toFixed(6)}`
+            : 'Belum tersedia';
+
         document.getElementById('content').innerHTML = `
-            <div class="status-badge ${statusClass}">${data.status || 'Tidak diketahui'}</div>
+            <div class="status-badge ${statusClass}">${data.status || 'Unknown'}</div>
 
             <div class="info-group driver-info">
                 <div class="info-label">📍 Lokasi Driver</div>
-                <div class="info-value">${data.driverLat?.toFixed(6)}, ${data.driverLng?.toFixed(6)}</div>
+                <div class="info-value">${driverLocation}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Lokasi User</div>
+                <div class="info-value">${userLocation}</div>
             </div>
 
             <div class="info-group">
@@ -306,8 +305,11 @@
         `;
 
         // Update peta (jika data lokasi tersedia)
-        if (data.driverLat && data.driverLng) {
+        if (data.driverLat != null && data.driverLng != null) {
             updateMarker('driver', data.driverLat, data.driverLng);
+        }
+        if (data.userLat != null && data.userLng != null) {
+            updateMarker('user', data.userLat, data.userLng);
         }
     }
 
@@ -315,6 +317,38 @@
         initializeMap();
         fetchTrackingData();
         setInterval(fetchTrackingData, 3000);
+        shareCurrentLocation();
+    }
+
+    function shareCurrentLocation() {
+        if (!navigator.geolocation || !orderId) return;
+
+        const endpoint = currentRole === 'DRIVER'
+            ? `/api/orders/${orderId}/driver-location`
+            : `/api/orders/${orderId}/user-location`;
+
+        config.watchId = navigator.geolocation.watchPosition(position => {
+            const payload = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(response => {
+                if (!response.ok) {
+                    console.error('Gagal mengirim lokasi');
+                }
+            }).catch(error => console.error('Location update error:', error));
+        }, error => {
+            console.error('Geolocation error:', error);
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 5000,
+            timeout: 10000
+        });
     }
 
     // Fetch order details untuk mendapat lokasi pickup & destination
@@ -323,7 +357,7 @@
             const response = await fetch(`/api/orders/${orderId}`);
             if (response.ok) {
                 const order = await response.json();
-                if (order.lokasiJemputLat && order.lokasiTujuanLat) {
+                if (order.lokasiJemputLat != null && order.lokasiTujuanLat != null) {
                     updateMarker('pickup', order.lokasiJemputLat, order.lokasiJemputLng);
                     updateMarker('destination', order.lokasiTujuanLat, order.lokasiTujuanLng);
                     drawRoute(order.lokasiJemputLat, order.lokasiJemputLng,
@@ -347,6 +381,5 @@
         loadOrderDetails();
     });
 </script>
-
 </body>
 </html>

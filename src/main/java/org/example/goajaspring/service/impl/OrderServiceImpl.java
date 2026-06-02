@@ -68,9 +68,26 @@ public class OrderServiceImpl implements OrderService{
         order.setDriverLat(lat);
         order.setDriverLng(lng);
 
-        // compute ETA if tujuan coords available
-        if (order.getLokasiTujuanLat() != null && order.getLokasiTujuanLng() != null) {
-            double km = distanceInKm(lat, lng, order.getLokasiTujuanLat(), order.getLokasiTujuanLng());
+        Double targetLat = order.getUserLat() != null ? order.getUserLat() : order.getLokasiJemputLat();
+        Double targetLng = order.getUserLng() != null ? order.getUserLng() : order.getLokasiJemputLng();
+        if (targetLat != null && targetLng != null) {
+            double km = distanceInKm(lat, lng, targetLat, targetLng);
+            int etaMinutes = (int) Math.round((km / AVERAGE_SPEED_KMH) * 60);
+            order.setEstimatedArrivalMinutes(Math.max(1, etaMinutes));
+        }
+
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public Order updateUserLocation(Long orderId, double lat, double lng) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order tidak ditemukan"));
+        order.setUserLat(lat);
+        order.setUserLng(lng);
+
+        if (order.getDriverLat() != null && order.getDriverLng() != null) {
+            double km = distanceInKm(order.getDriverLat(), order.getDriverLng(), lat, lng);
             int etaMinutes = (int) Math.round((km / AVERAGE_SPEED_KMH) * 60);
             order.setEstimatedArrivalMinutes(Math.max(1, etaMinutes));
         }

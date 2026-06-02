@@ -13,6 +13,8 @@ public interface OrderService {
 
     Order updateDriverLocation(Long orderId, double lat, double lng);
 
+    Order updateUserLocation(Long orderId, double lat, double lng);
+
     Order driverArrived(Long orderId);
 
     Order getOrderById(Long orderId);

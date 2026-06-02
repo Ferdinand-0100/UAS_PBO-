@@ -19,6 +19,16 @@ public class OrderRestController {
         return orderService.updateDriverLocation(id, dto.getLat(), dto.getLng());
     }
 
+    @PostMapping("/{id}/driver-location")
+    public Order updateDriverLocation(@PathVariable Long id, @RequestBody LocationDto dto) {
+        return orderService.updateDriverLocation(id, dto.getLat(), dto.getLng());
+    }
+
+    @PostMapping("/{id}/user-location")
+    public Order updateUserLocation(@PathVariable Long id, @RequestBody LocationDto dto) {
+        return orderService.updateUserLocation(id, dto.getLat(), dto.getLng());
+    }
+
     @PostMapping("/{id}/arrived")
     public Order driverArrived(@PathVariable Long id) {
         return orderService.driverArrived(id);
@@ -31,6 +41,12 @@ public class OrderRestController {
         t.setOrderId(o.getId());
         t.setDriverLat(o.getDriverLat());
         t.setDriverLng(o.getDriverLng());
+        t.setUserLat(o.getUserLat());
+        t.setUserLng(o.getUserLng());
+        t.setPickupLat(o.getLokasiJemputLat());
+        t.setPickupLng(o.getLokasiJemputLng());
+        t.setDestinationLat(o.getLokasiTujuanLat());
+        t.setDestinationLng(o.getLokasiTujuanLng());
         t.setEtaMinutes(o.getEstimatedArrivalMinutes());
         t.setStatus(o.getStatus());
         return t;
@@ -51,6 +67,12 @@ public class OrderRestController {
         private Long orderId;
         private Double driverLat;
         private Double driverLng;
+        private Double userLat;
+        private Double userLng;
+        private Double pickupLat;
+        private Double pickupLng;
+        private Double destinationLat;
+        private Double destinationLng;
         private Integer etaMinutes;
         private String status;
 
@@ -60,6 +82,18 @@ public class OrderRestController {
         public void setDriverLat(Double driverLat) { this.driverLat = driverLat; }
         public Double getDriverLng() { return driverLng; }
         public void setDriverLng(Double driverLng) { this.driverLng = driverLng; }
+        public Double getUserLat() { return userLat; }
+        public void setUserLat(Double userLat) { this.userLat = userLat; }
+        public Double getUserLng() { return userLng; }
+        public void setUserLng(Double userLng) { this.userLng = userLng; }
+        public Double getPickupLat() { return pickupLat; }
+        public void setPickupLat(Double pickupLat) { this.pickupLat = pickupLat; }
+        public Double getPickupLng() { return pickupLng; }
+        public void setPickupLng(Double pickupLng) { this.pickupLng = pickupLng; }
+        public Double getDestinationLat() { return destinationLat; }
+        public void setDestinationLat(Double destinationLat) { this.destinationLat = destinationLat; }
+        public Double getDestinationLng() { return destinationLng; }
+        public void setDestinationLng(Double destinationLng) { this.destinationLng = destinationLng; }
         public Integer getEtaMinutes() { return etaMinutes; }
         public void setEtaMinutes(Integer etaMinutes) { this.etaMinutes = etaMinutes; }
         public String getStatus() { return status; }

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
@@ -131,8 +130,10 @@ public class DriverApplicationController {
             Driver d = new Driver();
             d.setNama(app.getNama());
             d.setEmail(app.getEmail());
-            // default temporary password "123" (encode)
-            d.setPassword(passwordEncoder.encode("123"));
+            if (app.getPassword() == null || app.getPassword().isBlank()) {
+                throw new RuntimeException("Password driver belum diisi");
+            }
+            d.setPassword(passwordEncoder.encode(app.getPassword()));
             d.setKendaraan(app.getKendaraan());
             d.setPlatNomor(app.getPlatNomor());
             d.setAvailable(true);
@@ -142,7 +143,7 @@ public class DriverApplicationController {
             app.setStatus("APPROVED");
             appRepo.save(app);
 
-            ra.addFlashAttribute("success", "Aplikasi disetujui. Driver dibuat dengan password sementara '123'.");
+            ra.addFlashAttribute("success", "Aplikasi disetujui. Driver bisa login memakai email dan password yang didaftarkan.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Gagal approve: " + e.getMessage());
         }

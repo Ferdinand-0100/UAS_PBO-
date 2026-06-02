@@ -1,6 +1,5 @@
 package org.example.goajaspring.controller;
 
-import org.example.goajaspring.model.Driver;
 import org.example.goajaspring.model.Layanan;
 import org.example.goajaspring.model.Order;
 import org.example.goajaspring.service.DriverService;
@@ -127,8 +126,6 @@ public class PageController {
     @GetMapping("/drivers")
     public String drivers(Model model, Authentication authentication) {
         model.addAttribute("drivers", driverService.getAllDrivers());
-        model.addAttribute("newDriver", new Driver());
-
         String currentRole = "USER";
         if (authentication != null) {
             var authorities = authentication.getAuthorities();
@@ -145,12 +142,8 @@ public class PageController {
 
     /* ADD DRIVER — POST /drivers */
     @PostMapping("/drivers")
-    public String addDriver(@ModelAttribute Driver driver,
-                            RedirectAttributes ra) {
-        driver.setRole("DRIVER");
-        driver.setAvailable(true);
-        driverService.saveDriver(driver);
-        ra.addFlashAttribute("success", "Driver " + driver.getNama() + " berhasil ditambahkan.");
+    public String addDriver(RedirectAttributes ra) {
+        ra.addFlashAttribute("error", "Driver baru harus mendaftar lewat form Gabung jadi Driver, lalu disetujui admin.");
         return "redirect:/drivers";
     }
 
@@ -189,6 +182,10 @@ public class PageController {
                               @RequestParam String lokasiTujuan,
                               @RequestParam Long layananId,
                               @RequestParam double jarak,
+                              @RequestParam(required = false) Double lokasiJemputLat,
+                              @RequestParam(required = false) Double lokasiJemputLng,
+                              @RequestParam(required = false) Double lokasiTujuanLat,
+                              @RequestParam(required = false) Double lokasiTujuanLng,
                               RedirectAttributes ra,
                               Authentication authentication) {
 
@@ -231,6 +228,11 @@ public class PageController {
                 userService.findByEmail(authentication.getName()).ifPresent(order::setUser);
             }
 
+            order.setLokasiJemputLat(lokasiJemputLat);
+            order.setLokasiJemputLng(lokasiJemputLng);
+            order.setLokasiTujuanLat(lokasiTujuanLat);
+            order.setLokasiTujuanLng(lokasiTujuanLng);
+
             orderService.saveOrder(order);
             ra.addFlashAttribute("success", "Pesanan berhasil dibuat! Status: MENUNGGU.");
         } catch (RuntimeException e) {
@@ -241,12 +243,31 @@ public class PageController {
     }
 
     @GetMapping("/track/{orderId}")
-    public String trackPage(@PathVariable Long orderId, Model model) {
+    public String trackPage(@PathVariable Long orderId, Model model, Authentication authentication) {
+        String currentRole = "USER";
+        if (authentication != null && authentication.getAuthorities() != null && !authentication.getAuthorities().isEmpty()) {
+            String full = authentication.getAuthorities().iterator().next().getAuthority();
+            currentRole = full != null && full.startsWith("ROLE_") ? full.substring(5) : full;
+        }
         model.addAttribute("orderId", orderId);
+        model.addAttribute("currentRole", currentRole);
         return "track";
     }
 
     /* DELETE DRIVER — POST /drivers/{id}/delete */
+    @PostMapping("/orders/{orderId}/accept/{driverId}")
+    public String acceptOrderFromPage(@PathVariable Long orderId,
+                                      @PathVariable Long driverId,
+                                      RedirectAttributes ra) {
+        try {
+            orderService.acceptOrder(orderId, driverId);
+            ra.addFlashAttribute("success", "Pesanan berhasil diterima. Buka tracking untuk membagikan lokasi driver.");
+        } catch (RuntimeException e) {
+            ra.addFlashAttribute("error", "Gagal menerima pesanan: " + e.getMessage());
+        }
+        return "redirect:/orders";
+    }
+
     @PostMapping("/drivers/{driverId}/delete")
     public String deleteDriver(@PathVariable Long driverId, RedirectAttributes ra) {
         try {
