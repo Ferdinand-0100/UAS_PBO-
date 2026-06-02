@@ -314,7 +314,7 @@
                     <div class="doc-item">
                         <div class="doc-thumbnail">
                             <img th:if="${app.ktpPath != null}"
-                                 th:src="@{/uploads/{file}(file=${app.photoPath})}"
+                                 th:src="@{/uploads/{file}(file=${app.ktpPath})}"
                                  alt="KTP"
                                  style="width:100%; height:100%; object-fit: cover;">
                             <span th:unless="${app.ktpPath != null}">Tidak ada</span>
@@ -330,7 +330,7 @@
                     <div class="doc-item">
                         <div class="doc-thumbnail">
                             <img th:if="${app.simPath != null}"
-                                 th:src="@{/uploads/{file}(file=${app.photoPath})}"
+                                 th:src="@{/uploads/{file}(file=${app.simPath})}"
                                  alt="SIM"
                                  style="width:100%; height:100%; object-fit: cover;">
                             <span th:unless="${app.simPath != null}">Tidak ada</span>
@@ -346,7 +346,7 @@
                     <div class="doc-item">
                         <div class="doc-thumbnail">
                             <img th:if="${app.stnkPath != null}"
-                                 th:src="@{/uploads/{file}(file=${app.photoPath})}"
+                                 th:src="@{/uploads/{file}(file=${app.stnkPath})}"
                                  alt="STNK"
                                  style="width:100%; height:100%; object-fit: cover;">
                             <span th:unless="${app.stnkPath != null}">Tidak ada</span>
