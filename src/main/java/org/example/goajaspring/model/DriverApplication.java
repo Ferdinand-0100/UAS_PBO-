@@ -27,10 +27,10 @@ public class DriverApplication {
     private String stnkPath;
 
     // File bytes stored in DB
-    @Lob @Column(columnDefinition = "bytea") private byte[] photoData;
-    @Lob @Column(columnDefinition = "bytea") private byte[] ktpData;
-    @Lob @Column(columnDefinition = "bytea") private byte[] simData;
-    @Lob @Column(columnDefinition = "bytea") private byte[] stnkData;
+    @Column(columnDefinition = "bytea") private byte[] photoData;
+    @Column(columnDefinition = "bytea") private byte[] ktpData;
+    @Column(columnDefinition = "bytea") private byte[] simData;
+    @Column(columnDefinition = "bytea") private byte[] stnkData;
 
     // MIME types for serving
     private String photoContentType;
