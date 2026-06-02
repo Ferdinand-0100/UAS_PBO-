@@ -268,26 +268,20 @@ public class PageController {
         return "redirect:/orders";
     }
 
-    @PostMapping("/drivers/{driverId}/delete")
-    public String deleteDriver(@PathVariable Long driverId, RedirectAttributes ra) {
+    @PostMapping("/users/{userId}/delete")
+    public String deleteUser(@PathVariable Long userId, RedirectAttributes ra) {
         try {
-            // cari nama driver (opsional) agar pesan flash lebih informatif
-            String driverName = driverService.getAllDrivers().stream()
-                    .filter(d -> d.getId() != null && d.getId().equals(driverId))
-                    .map(d -> d.getNama())
-                    .findFirst()
-                    .orElse(null);
-
-            driverService.deleteDriver(driverId);
-
-            if (driverName != null) {
-                ra.addFlashAttribute("success", "Driver " + driverName + " berhasil dihapus.");
+            var userOpt = userService.findById(userId);
+            if (userOpt.isPresent()) {
+                String userName = userOpt.get().getNama();
+                userService.deleteUser(userId);
+                ra.addFlashAttribute("success", "User " + userName + " berhasil dihapus.");
             } else {
-                ra.addFlashAttribute("success", "Driver dengan id " + driverId + " berhasil dihapus.");
+                ra.addFlashAttribute("error", "User tidak ditemukan");
             }
         } catch (RuntimeException e) {
-            ra.addFlashAttribute("error", "Gagal menghapus driver: " + e.getMessage());
+            ra.addFlashAttribute("error", "Gagal menghapus user: " + e.getMessage());
         }
-        return "redirect:/drivers";
+        return "redirect:/";
     }
 }
