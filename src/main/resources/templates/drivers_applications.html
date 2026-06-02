@@ -297,65 +297,61 @@
                     <!-- Foto Profil -->
                     <div class="doc-item">
                         <div class="doc-thumbnail">
-                            <img th:if="${app.photoPath != null}"
-                                 th:src="@{/uploads/{file}(file=${app.photoPath})}"
+                            <img th:if="${app.photoData != null}"
+                                 th:src="@{/driver-docs/{id}/photo(id=${app.id})}"
                                  alt="Foto Profil"
                                  style="width:100%; height:100%; object-fit: cover;">
-                            <span th:unless="${app.photoPath != null}">Tidak ada</span>
+                            <span th:unless="${app.photoData != null}">Tidak ada</span>
                         </div>
                         <div class="doc-label">Foto Profil</div>
-                        <a th:if="${app.photoPath != null}"
-                           th:href="@{/uploads/{file}(file=${app.photoPath.substring(app.photoPath.lastIndexOf('\\') + 1)})}"
-                           target="_blank"
-                           class="doc-link">Lihat</a>
+                        <a th:if="${app.photoData != null}"
+                           th:href="@{/driver-docs/{id}/photo(id=${app.id})}"
+                           target="_blank" class="doc-link">Lihat</a>
                     </div>
 
                     <!-- KTP -->
                     <div class="doc-item">
                         <div class="doc-thumbnail">
-                            <img th:if="${app.ktpPath != null}"
-                                 th:src="@{/uploads/{file}(file=${app.ktpPath})}"
+                            <img th:if="${app.ktpData != null}"
+                                 th:src="@{/driver-docs/{id}/ktp(id=${app.id})}"
                                  alt="KTP"
                                  style="width:100%; height:100%; object-fit: cover;">
-                            <span th:unless="${app.ktpPath != null}">Tidak ada</span>
+                            <span th:unless="${app.ktpData != null}">Tidak ada</span>
                         </div>
                         <div class="doc-label">KTP</div>
-                        <a th:if="${app.ktpPath != null}"
-                           th:href="@{/uploads/{file}(file=${app.ktpPath.substring(app.ktpPath.lastIndexOf('\\') + 1)})}"
-                           target="_blank"
-                           class="doc-link">Lihat</a>
+                        <a th:if="${app.ktpData != null}"
+                           th:href="@{/driver-docs/{id}/ktp(id=${app.id})}"
+                           target="_blank" class="doc-link">Lihat</a>
                     </div>
 
                     <!-- SIM -->
                     <div class="doc-item">
                         <div class="doc-thumbnail">
-                            <img th:if="${app.simPath != null}"
-                                 th:src="@{/uploads/{file}(file=${app.simPath})}"
+                            <img th:if="${app.simData != null}"
+                                 th:src="@{/driver-docs/{id}/sim(id=${app.id})}"
                                  alt="SIM"
                                  style="width:100%; height:100%; object-fit: cover;">
-                            <span th:unless="${app.simPath != null}">Tidak ada</span>
+                            <span th:unless="${app.simData != null}">Tidak ada</span>
                         </div>
                         <div class="doc-label">SIM</div>
-                        <a th:if="${app.simPath != null}"
-                           th:href="@{/uploads/{file}(file=${app.simPath.substring(app.simPath.lastIndexOf('\\') + 1)})}"
-                           target="_blank"
-                           class="doc-link">Lihat</a>
+                        <a th:if="${app.simData != null}"
+                           th:href="@{/driver-docs/{id}/sim(id=${app.id})}"
+                           target="_blank" class="doc-link">Lihat</a>
                     </div>
 
                     <!-- STNK -->
                     <div class="doc-item">
                         <div class="doc-thumbnail">
-                            <img th:if="${app.stnkPath != null}"
-                                 th:src="@{/uploads/{file}(file=${app.stnkPath})}"
+                            <img th:if="${app.stnkData != null}"
+                                 th:src="@{/driver-docs/{id}/stnk(id=${app.id})}"
                                  alt="STNK"
                                  style="width:100%; height:100%; object-fit: cover;">
-                            <span th:unless="${app.stnkPath != null}">Tidak ada</span>
+                            <span th:unless="${app.stnkData != null}">Tidak ada</span>
                         </div>
                         <div class="doc-label">STNK</div>
-                        <a th:if="${app.stnkPath != null}"
-                           th:href="@{/uploads/{file}(file=${app.stnkPath.substring(app.stnkPath.lastIndexOf('\\') + 1)})}"
-                           target="_blank"
-                           class="doc-link">Lihat</a>
+                        <a th:if="${app.stnkData != null}"
+                           th:href="@{/driver-docs/{id}/stnk(id=${app.id})}"
+                           target="_blank" class="doc-link">Lihat</a>
                     </div>
                 </div>
             </div>

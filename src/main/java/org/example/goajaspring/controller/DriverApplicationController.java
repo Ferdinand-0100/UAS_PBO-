@@ -5,17 +5,18 @@ import org.example.goajaspring.model.DriverApplication;
 import org.example.goajaspring.service.DriverService;
 import org.example.goajaspring.service.LayananService;
 import org.example.goajaspring.repository.DriverApplicationRepository;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,8 +28,6 @@ public class DriverApplicationController {
     private final DriverService driverService;
     private final PasswordEncoder passwordEncoder;
 
-    private final Path uploadRoot = Paths.get("uploads");
-
     public DriverApplicationController(DriverApplicationRepository appRepo,
                                        LayananService layananService,
                                        DriverService driverService,
@@ -37,102 +36,93 @@ public class DriverApplicationController {
         this.layananService = layananService;
         this.driverService = driverService;
         this.passwordEncoder = passwordEncoder;
-
-        try {
-            Files.createDirectories(uploadRoot);
-        } catch (IOException ignored) {}
     }
 
     @GetMapping("/driver/apply")
     public String applyForm(Model model, Authentication authentication) {
         model.addAttribute("application", new DriverApplication());
         model.addAttribute("layananList", layananService.getAllLayanan());
-
-        String currentRole = "USER";
-        if (authentication != null) {
-            var authorities = authentication.getAuthorities();
-            if (authorities != null && !authorities.isEmpty()) {
-                String full = authorities.iterator().next().getAuthority();
-                if (full != null) {
-                    currentRole = full.startsWith("ROLE_") ? full.substring(5) : full;
-                }
-            }
-        }
-        model.addAttribute("currentRole", currentRole);
-
+        model.addAttribute("currentRole", resolveRole(authentication));
         return "driver_apply";
     }
 
     @PostMapping("/driver/submit")
     public String submitApplication(@ModelAttribute DriverApplication application,
                                     @RequestParam("photo") MultipartFile photo,
-                                    @RequestParam("ktp") MultipartFile ktp,
-                                    @RequestParam("sim") MultipartFile sim,
-                                    @RequestParam("stnk") MultipartFile stnk,
+                                    @RequestParam("ktp")   MultipartFile ktp,
+                                    @RequestParam("sim")   MultipartFile sim,
+                                    @RequestParam("stnk")  MultipartFile stnk,
                                     RedirectAttributes ra) {
         try {
             application.setCreatedAt(LocalDateTime.now());
             application.setStatus("PENDING");
 
-            application.setPhotoPath(storeFile(photo));
-            application.setKtpPath(storeFile(ktp));
-            application.setSimPath(storeFile(sim));
-            application.setStnkPath(storeFile(stnk));
+            // Store file bytes + original filename + content type directly in DB
+            if (!photo.isEmpty()) {
+                application.setPhotoPath(photo.getOriginalFilename());
+                application.setPhotoData(photo.getBytes());
+                application.setPhotoContentType(photo.getContentType());
+            }
+            if (!ktp.isEmpty()) {
+                application.setKtpPath(ktp.getOriginalFilename());
+                application.setKtpData(ktp.getBytes());
+                application.setKtpContentType(ktp.getContentType());
+            }
+            if (!sim.isEmpty()) {
+                application.setSimPath(sim.getOriginalFilename());
+                application.setSimData(sim.getBytes());
+                application.setSimContentType(sim.getContentType());
+            }
+            if (!stnk.isEmpty()) {
+                application.setStnkPath(stnk.getOriginalFilename());
+                application.setStnkData(stnk.getBytes());
+                application.setStnkContentType(stnk.getContentType());
+            }
 
             appRepo.save(application);
             ra.addFlashAttribute("success", "Aplikasi terkirim. Tunggu konfirmasi dari admin.");
-        } catch (Exception e) {
+        } catch (IOException e) {
             ra.addFlashAttribute("error", "Gagal mengirim aplikasi: " + e.getMessage());
         }
         return "redirect:/";
     }
 
-    private String storeFile(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) return null;
-        String original = file.getOriginalFilename();
-        String safeName = (original != null) ? StringUtils.cleanPath(original) : "file";
-        String filename = System.currentTimeMillis() + "_" + safeName;
-        Path dest = uploadRoot.resolve(filename);
-        Files.copy(file.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
-        return dest.toString();
+    /**
+     * Serves a stored document from the database.
+     * URL pattern: /driver-docs/{appId}/{type}
+     * type = photo | ktp | sim | stnk
+     */
+    @GetMapping("/driver-docs/{appId}/{type}")
+    public ResponseEntity<byte[]> serveDoc(@PathVariable Long appId,
+                                           @PathVariable String type) {
+        return appRepo.findById(appId).map(app -> {
+            byte[] data;
+            String contentType;
+
+            switch (type) {
+                case "photo" -> { data = app.getPhotoData(); contentType = app.getPhotoContentType(); }
+                case "ktp"   -> { data = app.getKtpData();   contentType = app.getKtpContentType(); }
+                case "sim"   -> { data = app.getSimData();   contentType = app.getSimContentType(); }
+                case "stnk"  -> { data = app.getStnkData();  contentType = app.getStnkContentType(); }
+                default      -> { return ResponseEntity.notFound().<byte[]>build(); }
+            }
+
+            if (data == null) return ResponseEntity.notFound().<byte[]>build();
+
+            MediaType media = parseContentType(contentType);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + type + "\"")
+                    .contentType(media)
+                    .body(data);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     // Admin: list pending applications
     @GetMapping("/drivers/applications")
     public String listApplications(Model model, Authentication authentication) {
         List<DriverApplication> list = appRepo.findByStatus("PENDING");
-
-        // Extract filenames untuk display di template
-        for (DriverApplication app : list) {
-            if (app.getPhotoPath() != null) {
-                app.setPhotoPath(getFilename(app.getPhotoPath()));
-            }
-            if (app.getKtpPath() != null) {
-                app.setKtpPath(getFilename(app.getKtpPath()));
-            }
-            if (app.getSimPath() != null) {
-                app.setSimPath(getFilename(app.getSimPath()));
-            }
-            if (app.getStnkPath() != null) {
-                app.setStnkPath(getFilename(app.getStnkPath()));
-            }
-        }
-
         model.addAttribute("applications", list);
-
-        // Add currentRole untuk navbar
-        String currentRole = "USER";
-        if (authentication != null) {
-            var authorities = authentication.getAuthorities();
-            if (authorities != null && !authorities.isEmpty()) {
-                String full = authorities.iterator().next().getAuthority();
-                if (full != null) {
-                    currentRole = full.startsWith("ROLE_") ? full.substring(5) : full;
-                }
-            }
-        }
-        model.addAttribute("currentRole", currentRole);
-
+        model.addAttribute("currentRole", resolveRole(authentication));
         return "drivers_applications";
     }
 
@@ -146,7 +136,6 @@ public class DriverApplicationController {
         }
         DriverApplication app = opt.get();
         try {
-            // create Driver
             Driver d = new Driver();
             d.setNama(app.getNama());
             d.setEmail(app.getEmail());
@@ -189,9 +178,23 @@ public class DriverApplicationController {
         return "redirect:/drivers/applications";
     }
 
-    private String getFilename(String path) {
-        if (path == null) return null;
-        int lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
-        return lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
+    // ── Helpers ──────────────────────────────────────────────
+
+    private String resolveRole(Authentication authentication) {
+        if (authentication == null) return "USER";
+        var authorities = authentication.getAuthorities();
+        if (authorities == null || authorities.isEmpty()) return "USER";
+        String full = authorities.iterator().next().getAuthority();
+        if (full == null) return "USER";
+        return full.startsWith("ROLE_") ? full.substring(5) : full;
+    }
+
+    private MediaType parseContentType(String contentType) {
+        if (contentType == null) return MediaType.APPLICATION_OCTET_STREAM;
+        try {
+            return MediaType.parseMediaType(contentType);
+        } catch (Exception e) {
+            return MediaType.APPLICATION_OCTET_STREAM;
+        }
     }
 }

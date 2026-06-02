@@ -20,10 +20,23 @@ public class DriverApplication {
     private String platNomor;
     private Long layananId; // referensi ke layanan yang dipilih
 
+    // Original filename (for display only)
     private String photoPath;
     private String ktpPath;
     private String simPath;
     private String stnkPath;
+
+    // File bytes stored in DB
+    @Lob @Column(columnDefinition = "bytea") private byte[] photoData;
+    @Lob @Column(columnDefinition = "bytea") private byte[] ktpData;
+    @Lob @Column(columnDefinition = "bytea") private byte[] simData;
+    @Lob @Column(columnDefinition = "bytea") private byte[] stnkData;
+
+    // MIME types for serving
+    private String photoContentType;
+    private String ktpContentType;
+    private String simContentType;
+    private String stnkContentType;
 
     private String status; // PENDING, APPROVED, REJECTED
 
@@ -73,6 +86,30 @@ public class DriverApplication {
 
     public String getStnkPath() { return stnkPath; }
     public void setStnkPath(String stnkPath) { this.stnkPath = stnkPath; }
+
+    public byte[] getPhotoData() { return photoData; }
+    public void setPhotoData(byte[] photoData) { this.photoData = photoData; }
+
+    public byte[] getKtpData() { return ktpData; }
+    public void setKtpData(byte[] ktpData) { this.ktpData = ktpData; }
+
+    public byte[] getSimData() { return simData; }
+    public void setSimData(byte[] simData) { this.simData = simData; }
+
+    public byte[] getStnkData() { return stnkData; }
+    public void setStnkData(byte[] stnkData) { this.stnkData = stnkData; }
+
+    public String getPhotoContentType() { return photoContentType; }
+    public void setPhotoContentType(String photoContentType) { this.photoContentType = photoContentType; }
+
+    public String getKtpContentType() { return ktpContentType; }
+    public void setKtpContentType(String ktpContentType) { this.ktpContentType = ktpContentType; }
+
+    public String getSimContentType() { return simContentType; }
+    public void setSimContentType(String simContentType) { this.simContentType = simContentType; }
+
+    public String getStnkContentType() { return stnkContentType; }
+    public void setStnkContentType(String stnkContentType) { this.stnkContentType = stnkContentType; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

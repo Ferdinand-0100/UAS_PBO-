@@ -19,7 +19,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/signup", "/css/**", "/images/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/login", "/signup", "/css/**", "/images/**", "/uploads/**", "/driver-docs/**", "/h2-console/**").permitAll()
                         .requestMatchers("/driver/apply", "/driver/submit").authenticated() // USER can access apply
                         .requestMatchers("/drivers/applications/**", "/admin/**", "/drivers/**", "/layanan/**").hasRole("ADMIN")
                         .requestMatchers("/orders/**", "/api/orders/**").hasAnyRole("USER","DRIVER","ADMIN")
