@@ -3,382 +3,467 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracking Pesanan</title>
+    <title>GoAja — Tracking Pesanan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared.css}">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
-        .track-container {
+        .track-layout {
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 2rem;
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
+            grid-template-columns: 320px 1fr;
+            height: calc(100vh - 64px); /* full viewport minus navbar */
+            border-top: 2px solid var(--border);
         }
 
-        .info-panel {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            height: fit-content;
+        /* ── Info Panel ── */
+        .track-info {
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
         }
 
-        .info-panel h1 {
-            margin-top: 0;
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 1rem;
+        .track-info-header {
+            padding: 2rem 2rem 1.5rem;
+            border-bottom: 2px solid var(--border);
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .status-active {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .status-pending {
-            background: #FF9800;
-            color: white;
-        }
-
-        .status-completed {
-            background: #2196F3;
-            color: white;
-        }
-
-        .info-group {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        .info-group:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            font-size: 0.85rem;
-            color: #999;
-            font-weight: 600;
+        .track-eyebrow {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
             text-transform: uppercase;
+            color: var(--accent);
             margin-bottom: 0.5rem;
         }
 
-        .info-value {
-            font-size: 1rem;
-            color: #333;
-            font-weight: 500;
-            word-break: break-word;
+        .track-title {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            line-height: 1;
         }
 
-        .map-wrapper {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+        .track-body {
+            padding: 1.5rem 2rem;
+            flex: 1;
+        }
+
+        .track-field {
+            padding: 1.25rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .track-field:last-child { border-bottom: none; }
+
+        .track-field-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-bottom: 0.4rem;
+        }
+
+        .track-field-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--fg);
+        }
+
+        .track-status {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 0.4rem 0.9rem;
+            border: 2px solid;
+        }
+
+        .track-status-waiting  { color: #f59e0b; border-color: #f59e0b; }
+        .track-status-active   { color: #22c55e; border-color: #22c55e; }
+        .track-status-done     { color: var(--muted-fg); border-color: var(--border); }
+
+        .track-eta {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .track-eta-unit {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-left: 0.4rem;
+        }
+
+        .track-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 3rem 2rem;
+            color: var(--muted-fg);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .track-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .track-error {
+            margin: 1.5rem 2rem;
+            padding: 1rem;
+            border-left: 3px solid var(--accent);
+            background: rgba(222,49,99,0.08);
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ── Map ── */
+        .track-map-wrap {
+            position: relative;
         }
 
         #trackingMap {
             width: 100%;
-            height: 600px;
+            height: 100%;
         }
 
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
+        /* Dark Leaflet tiles */
+        .leaflet-tile-container {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
         }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+        .leaflet-container {
+            background: #09090b !important;
+            font-family: 'Space Grotesk', sans-serif;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .leaflet-bar {
+            border: 2px solid var(--border) !important;
+            border-radius: 0 !important;
+            background: var(--bg) !important;
         }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
+        .leaflet-bar a {
+            background: var(--bg) !important;
+            color: var(--fg) !important;
+            border-bottom: 1px solid var(--border) !important;
+            border-radius: 0 !important;
         }
-
-        .driver-info {
-            background: #f0f8ff;
-            padding: 1rem;
-            border-left: 4px solid #2196F3;
-            border-radius: 4px;
+        .leaflet-bar a:hover {
+            background: var(--fg) !important;
+            color: var(--bg) !important;
         }
 
         @media (max-width: 768px) {
-            .track-container {
+            .track-layout {
                 grid-template-columns: 1fr;
+                grid-template-rows: auto 400px;
+                height: auto;
             }
-
-            #trackingMap {
-                height: 400px;
-            }
+            .track-info { border-right: none; border-bottom: 2px solid var(--border); }
         }
     </style>
 </head>
 <body>
-<div class="track-container">
+
+<!-- NAVBAR -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-brand" href="/">Go<span>Aja</span></a>
+    <ul class="nav-links" id="navLinks" role="list">
+        <li th:if="${currentRole == 'USER'}"><a href="/">Beranda</a></li>
+        <li th:if="${currentRole == 'USER'}"><a href="/orders">Pesanan</a></li>
+        <li th:if="${currentRole == 'USER'}"><a href="/driver/apply">Gabung jadi Driver</a></li>
+        <li th:if="${currentRole == 'DRIVER'}"><a href="/orders">Pesanan</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers">Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/drivers/applications">Aplikasi Driver</a></li>
+        <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
+    </ul>
+    <div class="nav-right">
+        <span class="nav-user" th:text="${#authentication.name}">User</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Keluar</button>
+        </form>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    </div>
+</nav>
+
+<!-- MAIN LAYOUT -->
+<div class="track-layout">
+
     <!-- Info Panel -->
-    <div class="info-panel">
-        <h1>🚗 Tracking</h1>
-        <div id="content">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Memuat data pesanan...</p>
+    <div class="track-info">
+        <div class="track-info-header">
+            <p class="track-eyebrow">Live</p>
+            <h1 class="track-title">Tracking<br>Pesanan</h1>
+        </div>
+        <div class="track-body" id="trackContent">
+            <div class="track-loading">
+                <div class="track-spinner"></div>
+                Memuat data...
             </div>
         </div>
     </div>
 
     <!-- Map -->
-    <div class="map-wrapper">
+    <div class="track-map-wrap">
         <div id="trackingMap"></div>
     </div>
+
 </div>
 
-<!-- Library -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script th:inline="javascript">
-    const orderId = /*[[${orderId}]]*/ 0;
+    const orderId     = /*[[${orderId}]]*/ 0;
     const currentRole = /*[[${currentRole}]]*/ 'USER';
-    const config = {
+
+    // ── State ────────────────────────────────────────────────
+    const state = {
         map: null,
-        markers: {
-            pickup: null,
-            destination: null,
-            driver: null,
-            user: null
-        },
-        labels: {
-            pickup: null,
-            destination: null,
-            driver: null,
-            user: null
-        },
-        polyline: null,
+        markers: { pickup: null, destination: null, driver: null, user: null, self: null },
         routePolyline: null,
-        watchId: null
+        watchId: null,
+        initialBoundsDone: false
     };
 
-    function initializeMap() {
-        config.map = L.map('trackingMap').setView([-6.2088, 106.8456], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
-            maxZoom: 19
-        }).addTo(config.map);
-    }
-
-    function updateMarker(type, lat, lng) {
-        if (lat == null || lng == null) return;
-
-        if (config.markers[type]) {
-            config.map.removeLayer(config.markers[type]);
-        }
-        if (config.labels[type]) {
-            config.map.removeLayer(config.labels[type]);
-        }
-
-        let color, label, icon;
-        if (type === 'pickup') {
-            color = 'green';
-            label = 'A';
-            icon = '📍';
-        } else if (type === 'destination') {
-            color = 'red';
-            label = 'B';
-            icon = '📌';
-        } else if (type === 'user') {
-            color = 'purple';
-            label = 'U';
-            icon = 'U';
-        } else {
-            color = 'blue';
-            label = '🚗';
-            icon = '🚗';
-        }
-
-        config.markers[type] = L.circleMarker([lat, lng], {
-            radius: 8,
-            fillColor: color,
-            color: '#fff',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.7
-        }).addTo(config.map);
-
-        config.labels[type] = L.marker([lat, lng], {
-            icon: L.divIcon({
-                className: 'text-label',
-                html: `<div style="font-size: 24px;">${icon}</div>`
-            })
-        }).addTo(config.map);
-    }
-
-    function drawRoute(pickupLat, pickupLng, destLat, destLng) {
-        if (config.routePolyline) {
-            config.map.removeLayer(config.routePolyline);
-        }
-
-        config.routePolyline = L.polyline([
-            [pickupLat, pickupLng],
-            [destLat, destLng]
-        ], {
-            color: '#2196F3',
-            weight: 3,
-            opacity: 0.5,
-            dashArray: '5, 5'
-        }).addTo(config.map);
-    }
-
-    async function fetchTrackingData() {
-        try {
-            const response = await fetch(`/api/orders/${orderId}/track`);
-            if (!response.ok) throw new Error('Gagal mengambil data');
-
-            const data = await response.json();
-            updateUI(data);
-        } catch (error) {
-            document.getElementById('content').innerHTML =
-                `<div class="error">⚠️ ${error.message}</div>`;
-            console.error(error);
-        }
-    }
-
-    function updateUI(data) {
-        const statusClass = {
-            'MENUNGGU': 'status-pending',
-            'DIJEMPUT': 'status-active',
-            'SAMPAI': 'status-completed'
-        }[data.status] || 'status-pending';
-
-        const driverLocation = data.driverLat != null && data.driverLng != null
-            ? `${data.driverLat.toFixed(6)}, ${data.driverLng.toFixed(6)}`
-            : 'Belum tersedia';
-        const userLocation = data.userLat != null && data.userLng != null
-            ? `${data.userLat.toFixed(6)}, ${data.userLng.toFixed(6)}`
-            : 'Belum tersedia';
-
-        document.getElementById('content').innerHTML = `
-            <div class="status-badge ${statusClass}">${data.status || 'Unknown'}</div>
-
-            <div class="info-group driver-info">
-                <div class="info-label">📍 Lokasi Driver</div>
-                <div class="info-value">${driverLocation}</div>
-            </div>
-
-            <div class="info-group">
-                <div class="info-label">Lokasi User</div>
-                <div class="info-value">${userLocation}</div>
-            </div>
-
-            <div class="info-group">
-                <div class="info-label">⏱️ ETA</div>
-                <div class="info-value">${data.etaMinutes ? data.etaMinutes + ' menit' : '—'}</div>
-            </div>
-
-            <div class="info-group">
-                <div class="info-label">🔢 ID Pesanan</div>
-                <div class="info-value">#${data.orderId}</div>
-            </div>
-        `;
-
-        // Update peta (jika data lokasi tersedia)
-        if (data.driverLat != null && data.driverLng != null) {
-            updateMarker('driver', data.driverLat, data.driverLng);
-        }
-        if (data.userLat != null && data.userLng != null) {
-            updateMarker('user', data.userLat, data.userLng);
-        }
-    }
-
-    function startTracking() {
-        initializeMap();
-        fetchTrackingData();
-        setInterval(fetchTrackingData, 3000);
-        shareCurrentLocation();
-    }
-
-    function shareCurrentLocation() {
-        if (!navigator.geolocation || !orderId) return;
-
-        const endpoint = currentRole === 'DRIVER'
-            ? `/api/orders/${orderId}/driver-location`
-            : `/api/orders/${orderId}/user-location`;
-
-        config.watchId = navigator.geolocation.watchPosition(position => {
-            const payload = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
-
-            fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).then(response => {
-                if (!response.ok) {
-                    console.error('Gagal mengirim lokasi');
-                }
-            }).catch(error => console.error('Location update error:', error));
-        }, error => {
-            console.error('Geolocation error:', error);
-        }, {
-            enableHighAccuracy: true,
-            maximumAge: 5000,
-            timeout: 10000
+    // ── Map icons ─────────────────────────────────────────────
+    function makeIcon(emoji, size = 28) {
+        return L.divIcon({
+            className: '',
+            html: `<div style="font-size:${size}px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6))">${emoji}</div>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2]
         });
     }
 
-    // Fetch order details untuk mendapat lokasi pickup & destination
+    function makeDotIcon(color) {
+        return L.divIcon({
+            className: '',
+            html: `<div style="
+                width:16px;height:16px;border-radius:50%;
+                background:${color};border:3px solid #fff;
+                box-shadow:0 0 0 3px ${color}55;
+            "></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+        });
+    }
+
+    const icons = {
+        pickup:      makeIcon('📍'),
+        destination: makeIcon('📌'),
+        driver:      makeIcon('🚗'),
+        user:        makeIcon('👤'),
+        self:        makeDotIcon('#3b82f6')
+    };
+
+    // ── Init map ──────────────────────────────────────────────
+    function initMap() {
+        state.map = L.map('trackingMap', { zoomControl: false })
+            .setView([-6.2088, 106.8456], 13);
+
+        L.control.zoom({ position: 'bottomright' }).addTo(state.map);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19
+        }).addTo(state.map);
+
+        // Zoom to user's real position immediately
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                state.map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+            }, () => {}, { enableHighAccuracy: true, timeout: 8000 });
+        }
+    }
+
+    // ── Update a marker ───────────────────────────────────────
+    function updateMarker(type, lat, lng) {
+        if (lat == null || lng == null) return;
+        if (state.markers[type]) state.map.removeLayer(state.markers[type]);
+        state.markers[type] = L.marker([lat, lng], { icon: icons[type] }).addTo(state.map);
+    }
+
+    // ── Draw straight-line route ──────────────────────────────
+    function drawRoute(pLat, pLng, dLat, dLng) {
+        if (state.routePolyline) state.map.removeLayer(state.routePolyline);
+        state.routePolyline = L.polyline([[pLat, pLng], [dLat, dLng]], {
+            color: '#DE3163', weight: 3, opacity: 0.5, dashArray: '6, 6'
+        }).addTo(state.map);
+    }
+
+    // ── Fit map to all visible points ─────────────────────────
+    function fitBoundsToAll() {
+        const points = Object.values(state.markers)
+            .filter(m => m != null)
+            .map(m => m.getLatLng());
+        if (points.length >= 2) {
+            state.map.fitBounds(L.latLngBounds(points), { padding: [60, 60] });
+        }
+    }
+
+    // ── Build info panel HTML ─────────────────────────────────
+    function renderInfo(data) {
+        const statusLabel = {
+            MENUNGGU: 'Menunggu Driver',
+            DIJEMPUT: 'Driver Menuju Anda',
+            SAMPAI:   'Driver Tiba',
+            SELESAI:  'Selesai'
+        }[data.status] || data.status || '—';
+
+        const statusClass = {
+            MENUNGGU: 'track-status-waiting',
+            DIJEMPUT: 'track-status-active',
+            SAMPAI:   'track-status-active',
+            SELESAI:  'track-status-done'
+        }[data.status] || 'track-status-waiting';
+
+        const etaHtml = data.etaMinutes
+            ? `<div class="track-eta">${data.etaMinutes}<span class="track-eta-unit">menit</span></div>`
+            : '<div class="track-field-value">—</div>';
+
+        return `
+            <div class="track-field">
+                <div class="track-field-label">Status</div>
+                <span class="track-status ${statusClass}">${statusLabel}</span>
+            </div>
+            <div class="track-field">
+                <div class="track-field-label">⏱ ETA</div>
+                ${etaHtml}
+            </div>
+            <div class="track-field">
+                <div class="track-field-label">🚗 Posisi Driver</div>
+                <div class="track-field-value">${
+                    data.driverLat != null
+                        ? `${data.driverLat.toFixed(5)}, ${data.driverLng.toFixed(5)}`
+                        : 'Belum tersedia'
+                }</div>
+            </div>
+            <div class="track-field">
+                <div class="track-field-label">👤 Posisi Penumpang</div>
+                <div class="track-field-value">${
+                    data.userLat != null
+                        ? `${data.userLat.toFixed(5)}, ${data.userLng.toFixed(5)}`
+                        : 'Belum tersedia'
+                }</div>
+            </div>
+            <div class="track-field">
+                <div class="track-field-label">ID Pesanan</div>
+                <div class="track-field-value">#${data.orderId}</div>
+            </div>
+        `;
+    }
+
+    // ── Fetch & refresh tracking data ─────────────────────────
+    async function fetchTrackingData() {
+        try {
+            const res = await fetch(`/api/orders/${orderId}/track`);
+            if (!res.ok) throw new Error('Gagal mengambil data tracking');
+            const data = await res.json();
+
+            document.getElementById('trackContent').innerHTML = renderInfo(data);
+
+            if (data.driverLat != null) updateMarker('driver', data.driverLat, data.driverLng);
+            if (data.userLat   != null) updateMarker('user',   data.userLat,   data.userLng);
+
+            // Fit bounds once after first real data arrives
+            if (!state.initialBoundsDone && (data.driverLat != null || data.userLat != null)) {
+                fitBoundsToAll();
+                state.initialBoundsDone = true;
+            }
+        } catch (err) {
+            document.getElementById('trackContent').innerHTML =
+                `<div class="track-error">⚠ ${err.message}</div>`;
+        }
+    }
+
+    // ── Load pickup/destination from order ────────────────────
     async function loadOrderDetails() {
         try {
-            const response = await fetch(`/api/orders/${orderId}`);
-            if (response.ok) {
-                const order = await response.json();
-                if (order.lokasiJemputLat != null && order.lokasiTujuanLat != null) {
-                    updateMarker('pickup', order.lokasiJemputLat, order.lokasiJemputLng);
-                    updateMarker('destination', order.lokasiTujuanLat, order.lokasiTujuanLng);
-                    drawRoute(order.lokasiJemputLat, order.lokasiJemputLng,
-                             order.lokasiTujuanLat, order.lokasiTujuanLng);
+            const res = await fetch(`/api/orders/${orderId}`);
+            if (!res.ok) return;
+            const order = await res.json();
 
-                    const bounds = L.latLngBounds([
-                        [order.lokasiJemputLat, order.lokasiJemputLng],
-                        [order.lokasiTujuanLat, order.lokasiTujuanLng],
-                        [order.driverLat || order.lokasiJemputLat, order.driverLng || order.lokasiJemputLng]
-                    ]);
-                    config.map.fitBounds(bounds, { padding: [50, 50] });
-                }
+            if (order.lokasiJemputLat != null) {
+                updateMarker('pickup', order.lokasiJemputLat, order.lokasiJemputLng);
+            }
+            if (order.lokasiTujuanLat != null) {
+                updateMarker('destination', order.lokasiTujuanLat, order.lokasiTujuanLng);
+            }
+            if (order.lokasiJemputLat != null && order.lokasiTujuanLat != null) {
+                drawRoute(order.lokasiJemputLat, order.lokasiJemputLng,
+                          order.lokasiTujuanLat, order.lokasiTujuanLng);
+                fitBoundsToAll();
+                state.initialBoundsDone = true;
             }
         } catch (e) {
             console.error('Error loading order details:', e);
         }
     }
 
+    // ── Share this user's live GPS position ───────────────────
+    function shareMyLocation() {
+        if (!navigator.geolocation || !orderId) return;
+
+        const endpoint = currentRole === 'DRIVER'
+            ? `/api/orders/${orderId}/driver-location`
+            : `/api/orders/${orderId}/user-location`;
+
+        state.watchId = navigator.geolocation.watchPosition(pos => {
+            const { latitude: lat, longitude: lng } = pos.coords;
+
+            // Update "self" dot on map
+            updateMarker('self', lat, lng);
+
+            // Push to server
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lat, lng })
+            }).catch(err => console.error('Location push error:', err));
+
+        }, err => console.error('Geolocation error:', err), {
+            enableHighAccuracy: true,
+            maximumAge: 5000,
+            timeout: 10000
+        });
+    }
+
+    // ── Bootstrap ─────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-        startTracking();
+        // Nav toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            const nl = document.getElementById('navLinks');
+            const open = nl.classList.toggle('open');
+            this.setAttribute('aria-expanded', open);
+        });
+
+        initMap();
         loadOrderDetails();
+        fetchTrackingData();
+        setInterval(fetchTrackingData, 3000);
+        shareMyLocation();
     });
 </script>
 </body>
