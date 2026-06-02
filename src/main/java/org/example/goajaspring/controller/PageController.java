@@ -180,8 +180,8 @@ public class PageController {
     @PostMapping("/order/submit")
     public String submitOrder(@RequestParam String lokasiJemput,
                               @RequestParam String lokasiTujuan,
-                              @RequestParam Long layananId,
-                              @RequestParam double jarak,
+                              @RequestParam(required = false) Long layananId,
+                              @RequestParam(defaultValue = "0") double jarak,
                               @RequestParam(required = false) Double lokasiJemputLat,
                               @RequestParam(required = false) Double lokasiJemputLng,
                               @RequestParam(required = false) Double lokasiTujuanLat,
@@ -204,6 +204,16 @@ public class PageController {
                     }
                 }
             }
+        }
+
+        // Guard against incomplete form submission
+        if (layananId == null) {
+            ra.addFlashAttribute("error", "Gagal membuat pesanan: Pilih jenis layanan terlebih dahulu.");
+            return "redirect:/";
+        }
+        if (jarak <= 0) {
+            ra.addFlashAttribute("error", "Gagal membuat pesanan: Masukkan jarak perjalanan.");
+            return "redirect:/";
         }
 
         try {
