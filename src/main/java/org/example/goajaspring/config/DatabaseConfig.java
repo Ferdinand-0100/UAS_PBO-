@@ -39,9 +39,16 @@ public class DatabaseConfig {
         // Already a valid JDBC URL — return as-is
         if (url.startsWith("jdbc:")) return url;
 
-        // postgres:// or postgresql:// → jdbc:postgresql://
-        return "jdbc:postgresql://" + url
-                .replace("postgres://", "")
-                .replace("postgresql://", "");
+        // Replace libpq scheme with JDBC scheme — everything after :// is kept verbatim.
+        // We intentionally avoid java.net.URI because it misparses passwords that
+        // contain special characters (e.g. '@'), corrupting the host resolution.
+        if (url.startsWith("postgresql://")) {
+            return "jdbc:postgresql://" + url.substring("postgresql://".length());
+        }
+        if (url.startsWith("postgres://")) {
+            return "jdbc:postgresql://" + url.substring("postgres://".length());
+        }
+
+        throw new IllegalStateException("Unrecognised DATABASE_URL format: " + url);
     }
 }
