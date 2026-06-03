@@ -379,8 +379,13 @@
     // ── Fetch & refresh tracking data ─────────────────────────
     async function fetchTrackingData() {
         try {
-            const res = await fetch(`/api/orders/${orderId}/track`);
-            if (!res.ok) throw new Error('Server error ' + res.status);
+            const res = await fetch(`/api/orders/${orderId}/track`, {
+                credentials: 'same-origin'
+            });
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`HTTP ${res.status}: ${body.substring(0, 200)}`);
+            }
             const data = await res.json();
 
             // Always replace content — clears the spinner on first successful response
@@ -394,9 +399,13 @@
                 state.initialBoundsDone = true;
             }
         } catch (err) {
-            // Always show the error — never stay on spinner indefinitely
             document.getElementById('trackContent').innerHTML =
-                `<div class="track-error">⚠ Gagal memuat data tracking.<br><small style="opacity:0.7">${err.message}</small><br><br><small>Mencoba ulang setiap 3 detik...</small></div>`;
+                `<div class="track-error">
+                    ⚠ Gagal memuat data tracking.<br>
+                    <small style="opacity:0.7;word-break:break-all">${err.message}</small><br><br>
+                    <small>Order ID: ${orderId} | Role: ${currentRole}</small><br>
+                    <small>Mencoba ulang setiap 3 detik...</small>
+                </div>`;
             console.error('Tracking error:', err);
         }
     }
