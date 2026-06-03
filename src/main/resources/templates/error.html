@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'GoAja — ' + ${status}">GoAja — Error</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/shared.css}">
+    <style>
+        .error-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 64px);
+            border-top: 2px solid var(--border);
+        }
+
+        .error-left {
+            padding: 6rem 5vw;
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .error-code {
+            font-size: clamp(6rem, 18vw, 16rem);
+            font-weight: 700;
+            letter-spacing: -0.06em;
+            line-height: 0.85;
+            color: var(--muted);
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .error-code span {
+            color: var(--accent);
+        }
+
+        .error-bottom {
+            margin-top: auto;
+            padding-top: 3rem;
+        }
+
+        .error-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: clamp(1.8rem, 3vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: var(--fg);
+            line-height: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        .error-desc {
+            font-size: 1rem;
+            color: var(--muted-fg);
+            line-height: 1.7;
+            max-width: 380px;
+            margin-bottom: 2.5rem;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .error-right {
+            padding: 6rem 5vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0;
+        }
+
+        .error-detail-block {
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .error-detail-block:first-child {
+            border-top: 1px solid var(--border);
+        }
+
+        .error-detail-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--muted-fg);
+            margin-bottom: 0.5rem;
+        }
+
+        .error-detail-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--fg);
+            word-break: break-all;
+        }
+
+        .error-detail-value.accent {
+            color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .error-layout {
+                grid-template-columns: 1fr;
+            }
+            .error-left {
+                padding: 4rem 5vw 3rem;
+                border-right: none;
+                border-bottom: 2px solid var(--border);
+            }
+            .error-right {
+                padding: 3rem 5vw 4rem;
+            }
+            .error-code {
+                font-size: 8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-brand" href="/">Go<span>Aja</span></a>
+    <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="/">Beranda</a></li>
+        <li><a href="/orders">Pesanan</a></li>
+    </ul>
+    <div class="nav-right">
+        <span class="nav-user" sec:authentication="name">User</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Keluar</button>
+        </form>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    </div>
+</nav>
+
+<div class="error-layout">
+
+    <!-- LEFT: Big status code + message -->
+    <div class="error-left">
+        <div class="error-code" aria-hidden="true">
+            <!-- Highlight first digit of 4xx in accent, keep 5xx fully muted -->
+            <th:block th:if="${status != null and status.toString().startsWith('4')}">
+                <span th:text="${status.toString().charAt(0)}"></span><th:block th:text="${status.toString().substring(1)}"></th:block>
+            </th:block>
+            <th:block th:unless="${status != null and status.toString().startsWith('4')}"
+                      th:text="${status ?: '???'}"></th:block>
+        </div>
+
+        <div class="error-bottom">
+            <p class="error-label">Terjadi Kesalahan</p>
+            <h1 class="error-title" th:text="${error ?: 'Sesuatu tidak berjalan dengan benar'}">
+                Internal Server Error
+            </h1>
+            <p class="error-desc">
+                <th:block th:if="${status == 404}">
+                    Halaman atau sumber daya yang kamu cari tidak ditemukan. Mungkin URL berubah atau dihapus.
+                </th:block>
+                <th:block th:if="${status == 403}">
+                    Kamu tidak memiliki izin untuk mengakses halaman ini.
+                </th:block>
+                <th:block th:if="${status == 401}">
+                    Kamu perlu masuk terlebih dahulu untuk mengakses halaman ini.
+                </th:block>
+                <th:block th:if="${status == 400}">
+                    Permintaan tidak valid. Periksa kembali data yang dikirimkan.
+                </th:block>
+                <th:block th:unless="${status == 404 or status == 403 or status == 401 or status == 400}">
+                    Terjadi kesalahan di sisi server. Tim kami sudah mengetahuinya. Coba lagi dalam beberapa saat.
+                </th:block>
+            </p>
+
+            <div class="error-actions">
+                <a href="/" class="btn-primary" style="text-decoration:none;">Kembali ke Beranda</a>
+                <a href="javascript:history.back()" class="btn-outline" style="text-decoration:none;">Halaman Sebelumnya</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Error details -->
+    <div class="error-right">
+        <div class="error-detail-block">
+            <div class="error-detail-label">Status Code</div>
+            <div class="error-detail-value accent" th:text="${status ?: '—'}">500</div>
+        </div>
+        <div class="error-detail-block">
+            <div class="error-detail-label">Error</div>
+            <div class="error-detail-value" th:text="${error ?: '—'}">Internal Server Error</div>
+        </div>
+        <div class="error-detail-block" th:if="${message != null and !message.isEmpty() and message != 'No message available'}">
+            <div class="error-detail-label">Pesan</div>
+            <div class="error-detail-value" th:text="${message}">—</div>
+        </div>
+        <div class="error-detail-block">
+            <div class="error-detail-label">Path</div>
+            <div class="error-detail-value" th:text="${path ?: '—'}">—</div>
+        </div>
+        <div class="error-detail-block">
+            <div class="error-detail-label">Waktu</div>
+            <div class="error-detail-value"
+                 th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy, HH:mm:ss')}">—</div>
+        </div>
+    </div>
+
+</div>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">Go<span>Aja</span></div>
+        <p class="footer-copy">&copy; 2025 GoAja &mdash; UAS Pemrograman Berorientasi Objek</p>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('navToggle').addEventListener('click', function() {
+        const nl = document.getElementById('navLinks');
+        const open = nl.classList.toggle('open');
+        this.setAttribute('aria-expanded', open);
+    });
+</script>
+
+</body>
+</html>

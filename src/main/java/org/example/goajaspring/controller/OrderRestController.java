@@ -32,23 +32,27 @@ public class OrderRestController {
     }
 
     @PostMapping("/{id}/location")
-    public Order updateLocation(@PathVariable Long id, @RequestBody LocationDto dto) {
-        return orderService.updateDriverLocation(id, dto.getLat(), dto.getLng());
+    public Map<String, Object> updateLocation(@PathVariable Long id, @RequestBody LocationDto dto) {
+        Order o = orderService.updateDriverLocation(id, dto.getLat(), dto.getLng());
+        return Map.of("orderId", o.getId(), "status", o.getStatus());
     }
 
     @PostMapping("/{id}/driver-location")
-    public Order updateDriverLocation(@PathVariable Long id, @RequestBody LocationDto dto) {
-        return orderService.updateDriverLocation(id, dto.getLat(), dto.getLng());
+    public Map<String, Object> updateDriverLocation(@PathVariable Long id, @RequestBody LocationDto dto) {
+        Order o = orderService.updateDriverLocation(id, dto.getLat(), dto.getLng());
+        return Map.of("orderId", o.getId(), "status", o.getStatus());
     }
 
     @PostMapping("/{id}/user-location")
-    public Order updateUserLocation(@PathVariable Long id, @RequestBody LocationDto dto) {
-        return orderService.updateUserLocation(id, dto.getLat(), dto.getLng());
+    public Map<String, Object> updateUserLocation(@PathVariable Long id, @RequestBody LocationDto dto) {
+        Order o = orderService.updateUserLocation(id, dto.getLat(), dto.getLng());
+        return Map.of("orderId", o.getId(), "status", o.getStatus());
     }
 
     @PostMapping("/{id}/arrived")
-    public Order driverArrived(@PathVariable Long id) {
-        return orderService.driverArrived(id);
+    public Map<String, Object> driverArrived(@PathVariable Long id) {
+        Order o = orderService.driverArrived(id);
+        return Map.of("orderId", o.getId(), "status", o.getStatus());
     }
 
     @GetMapping("/{id}/track")
@@ -70,13 +74,12 @@ public class OrderRestController {
     }
 
     @PostMapping("/{id}/accept")
-    public Order acceptOrderSimple(@PathVariable Long id,
-                                   @AuthenticationPrincipal UserDetails userDetails) {
+    public Map<String, Object> acceptOrderSimple(@PathVariable Long id,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             throw new RuntimeException("Driver tidak ter-autentikasi");
         }
 
-        // Query DriverRepository directly instead of UserRepository
         Driver driver = driverRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Driver tidak ditemukan: " + userDetails.getUsername()));
 
@@ -87,17 +90,31 @@ public class OrderRestController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order tidak ditemukan"));
 
+        if (!"MENUNGGU".equals(order.getStatus())) {
+            throw new RuntimeException("Pesanan sudah diambil oleh driver lain");
+        }
+
         order.setDriver(driver);
         order.setStatus("DIJEMPUT");
         driver.setAvailable(false);
         driverRepository.save(driver);
+        orderRepository.save(order);
 
-        return orderRepository.save(order);
+        // Return plain map to avoid entity serialization issues
+        return Map.of(
+            "orderId", order.getId(),
+            "status", "DIJEMPUT",
+            "driverName", driver.getNama()
+        );
     }
 
     @PostMapping("/{id}/update-status")
-    public Order updateOrderStatusEndpoint(@PathVariable Long id, @RequestBody Map<String, String> payload) {
-        return orderService.updateOrderStatus(id, payload.get("status"));
+    public Map<String, Object> updateOrderStatusEndpoint(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        Order order = orderService.updateOrderStatus(id, payload.get("status"));
+        return Map.of(
+            "orderId", order.getId(),
+            "status", order.getStatus()
+        );
     }
 
     // DTOs
