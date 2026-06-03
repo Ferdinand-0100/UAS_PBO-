@@ -211,7 +211,8 @@
 </nav>
 
 <!-- MAIN LAYOUT -->
-<div class="track-layout">
+<div class="track-layout" id="trackApp"
+     th:attr="data-order-id=${orderId}, data-role=${currentRole}">
 
     <!-- Info Panel -->
     <div class="track-info">
@@ -235,24 +236,27 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script th:inline="javascript">
-    const orderId     = /*[[${orderId}]]*/ 0;
-    const currentRole = /*[[${currentRole}]]*/ 'USER';
+<script>
+    var _app     = document.getElementById('trackApp');
+    var orderId     = parseInt(_app.getAttribute('data-order-id'), 10) || 0;
+    var currentRole = _app.getAttribute('data-role') || 'USER';
 
     // ── State ────────────────────────────────────────────────
     const state = {
         map: null,
         markers: { pickup: null, destination: null, driver: null, user: null, self: null },
+        icons: {},
         routePolyline: null,
         watchId: null,
         initialBoundsDone: false
     };
 
     // ── Map icons ─────────────────────────────────────────────
-    function makeIcon(emoji, size = 28) {
+    function makeIcon(emoji, size) {
+        size = size || 28;
         return L.divIcon({
             className: '',
-            html: `<div style="font-size:${size}px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6))">${emoji}</div>`,
+            html: '<div style="font-size:' + size + 'px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6))">' + emoji + '</div>',
             iconSize: [size, size],
             iconAnchor: [size / 2, size / 2]
         });
@@ -261,26 +265,20 @@
     function makeDotIcon(color) {
         return L.divIcon({
             className: '',
-            html: `<div style="
-                width:16px;height:16px;border-radius:50%;
-                background:${color};border:3px solid #fff;
-                box-shadow:0 0 0 3px ${color}55;
-            "></div>`,
+            html: '<div style="width:16px;height:16px;border-radius:50%;background:' + color + ';border:3px solid #fff;box-shadow:0 0 0 3px ' + color + '55;"></div>',
             iconSize: [16, 16],
             iconAnchor: [8, 8]
         });
     }
 
-    const icons = {
-        pickup:      makeIcon('📍'),
-        destination: makeIcon('📌'),
-        driver:      makeIcon('🚗'),
-        user:        makeIcon('👤'),
-        self:        makeDotIcon('#3b82f6')
-    };
-
     // ── Init map ──────────────────────────────────────────────
     function initMap() {
+        // Build icons here so any L.divIcon error is contained
+        state.icons.pickup      = makeIcon('📍');
+        state.icons.destination = makeIcon('📌');
+        state.icons.driver      = makeIcon('🚗');
+        state.icons.user        = makeIcon('👤');
+        state.icons.self        = makeDotIcon('#3b82f6');
         state.map = L.map('trackingMap', { zoomControl: false })
             .setView([-6.2088, 106.8456], 13);
 
@@ -303,7 +301,8 @@
     function updateMarker(type, lat, lng) {
         if (lat == null || lng == null) return;
         if (state.markers[type]) state.map.removeLayer(state.markers[type]);
-        state.markers[type] = L.marker([lat, lng], { icon: icons[type] }).addTo(state.map);
+        var icon = state.icons[type] || state.icons.self;
+        state.markers[type] = L.marker([lat, lng], { icon: icon }).addTo(state.map);
     }
 
     // ── Draw straight-line route ──────────────────────────────
@@ -326,69 +325,65 @@
 
     // ── Build info panel HTML ─────────────────────────────────
     function renderInfo(data) {
-        const statusLabel = {
+        var statusLabels = {
             MENUNGGU: 'Menunggu Driver',
             DIJEMPUT: 'Driver Menuju Anda',
             SAMPAI:   'Driver Tiba',
             SELESAI:  'Selesai'
-        }[data.status] || data.status || '—';
-
-        const statusClass = {
+        };
+        var statusClasses = {
             MENUNGGU: 'track-status-waiting',
             DIJEMPUT: 'track-status-active',
             SAMPAI:   'track-status-active',
             SELESAI:  'track-status-done'
-        }[data.status] || 'track-status-waiting';
+        };
 
-        const etaHtml = data.etaMinutes
-            ? `<div class="track-eta">${data.etaMinutes}<span class="track-eta-unit">menit</span></div>`
+        var statusLabel = statusLabels[data.status] || data.status || '—';
+        var statusClass = statusClasses[data.status] || 'track-status-waiting';
+        var etaHtml = data.etaMinutes
+            ? '<div class="track-eta">' + data.etaMinutes + '<span class="track-eta-unit">menit</span></div>'
             : '<div class="track-field-value">—</div>';
+        var driverPos = (data.driverLat != null)
+            ? data.driverLat.toFixed(5) + ', ' + data.driverLng.toFixed(5)
+            : 'Belum tersedia';
+        var userPos = (data.userLat != null)
+            ? data.userLat.toFixed(5) + ', ' + data.userLng.toFixed(5)
+            : 'Belum tersedia';
 
-        return `
-            <div class="track-field">
-                <div class="track-field-label">Status</div>
-                <span class="track-status ${statusClass}">${statusLabel}</span>
-            </div>
-            <div class="track-field">
-                <div class="track-field-label">⏱ ETA</div>
-                ${etaHtml}
-            </div>
-            <div class="track-field">
-                <div class="track-field-label">🚗 Posisi Driver</div>
-                <div class="track-field-value">${
-                    data.driverLat != null
-                        ? `${data.driverLat.toFixed(5)}, ${data.driverLng.toFixed(5)}`
-                        : 'Belum tersedia'
-                }</div>
-            </div>
-            <div class="track-field">
-                <div class="track-field-label">👤 Posisi Penumpang</div>
-                <div class="track-field-value">${
-                    data.userLat != null
-                        ? `${data.userLat.toFixed(5)}, ${data.userLng.toFixed(5)}`
-                        : 'Belum tersedia'
-                }</div>
-            </div>
-            <div class="track-field">
-                <div class="track-field-label">ID Pesanan</div>
-                <div class="track-field-value">#${data.orderId}</div>
-            </div>
-        `;
+        return '<div class="track-field">' +
+                   '<div class="track-field-label">Status</div>' +
+                   '<span class="track-status ' + statusClass + '">' + statusLabel + '</span>' +
+               '</div>' +
+               '<div class="track-field">' +
+                   '<div class="track-field-label">⏱ ETA</div>' +
+                   etaHtml +
+               '</div>' +
+               '<div class="track-field">' +
+                   '<div class="track-field-label">🚗 Posisi Driver</div>' +
+                   '<div class="track-field-value">' + driverPos + '</div>' +
+               '</div>' +
+               '<div class="track-field">' +
+                   '<div class="track-field-label">👤 Posisi Penumpang</div>' +
+                   '<div class="track-field-value">' + userPos + '</div>' +
+               '</div>' +
+               '<div class="track-field">' +
+                   '<div class="track-field-label">ID Pesanan</div>' +
+                   '<div class="track-field-value">#' + data.orderId + '</div>' +
+               '</div>';
     }
 
     // ── Fetch & refresh tracking data ─────────────────────────
     async function fetchTrackingData() {
         try {
-            const res = await fetch(`/api/orders/${orderId}/track`, {
+            const res = await fetch('/api/orders/' + orderId + '/track', {
                 credentials: 'same-origin'
             });
             if (!res.ok) {
                 const body = await res.text();
-                throw new Error(`HTTP ${res.status}: ${body.substring(0, 200)}`);
+                throw new Error('HTTP ' + res.status + ': ' + body.substring(0, 200));
             }
             const data = await res.json();
 
-            // Always replace content — clears the spinner on first successful response
             document.getElementById('trackContent').innerHTML = renderInfo(data);
 
             if (data.driverLat != null) updateMarker('driver', data.driverLat, data.driverLng);
@@ -400,12 +395,10 @@
             }
         } catch (err) {
             document.getElementById('trackContent').innerHTML =
-                `<div class="track-error">
-                    ⚠ Gagal memuat data tracking.<br>
-                    <small style="opacity:0.7;word-break:break-all">${err.message}</small><br><br>
-                    <small>Order ID: ${orderId} | Role: ${currentRole}</small><br>
-                    <small>Mencoba ulang setiap 3 detik...</small>
-                </div>`;
+                '<div class="track-error">⚠ Gagal memuat data tracking.<br>' +
+                '<small style="opacity:0.7;word-break:break-all">' + err.message + '</small><br><br>' +
+                '<small>Order ID: ' + orderId + ' | Role: ' + currentRole + '</small><br>' +
+                '<small>Mencoba ulang setiap 3 detik...</small></div>';
             console.error('Tracking error:', err);
         }
     }
@@ -413,7 +406,9 @@
     // ── Load pickup/destination from order ────────────────────
     async function loadOrderDetails() {
         try {
-            const res = await fetch(`/api/orders/${orderId}`);
+            const res = await fetch('/api/orders/' + orderId, {
+                credentials: 'same-origin'
+            });
             if (!res.ok) return;
             const order = await res.json();
 
@@ -438,24 +433,24 @@
     function shareMyLocation() {
         if (!navigator.geolocation || !orderId) return;
 
-        const endpoint = currentRole === 'DRIVER'
-            ? `/api/orders/${orderId}/driver-location`
-            : `/api/orders/${orderId}/user-location`;
+        var endpoint = currentRole === 'DRIVER'
+            ? '/api/orders/' + orderId + '/driver-location'
+            : '/api/orders/' + orderId + '/user-location';
 
-        state.watchId = navigator.geolocation.watchPosition(pos => {
-            const { latitude: lat, longitude: lng } = pos.coords;
+        state.watchId = navigator.geolocation.watchPosition(function(pos) {
+            var lat = pos.coords.latitude;
+            var lng = pos.coords.longitude;
 
-            // Update "self" dot on map
             updateMarker('self', lat, lng);
 
-            // Push to server
             fetch(endpoint, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lat, lng })
-            }).catch(err => console.error('Location push error:', err));
+                body: JSON.stringify({ lat: lat, lng: lng })
+            }).catch(function(err) { console.error('Location push error:', err); });
 
-        }, err => console.error('Geolocation error:', err), {
+        }, function(err) { console.error('Geolocation error:', err); }, {
             enableHighAccuracy: true,
             maximumAge: 5000,
             timeout: 10000
@@ -464,18 +459,24 @@
 
     // ── Bootstrap ─────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-        // Nav toggle
-        document.getElementById('navToggle').addEventListener('click', function() {
-            const nl = document.getElementById('navLinks');
-            const open = nl.classList.toggle('open');
-            this.setAttribute('aria-expanded', open);
-        });
+        try {
+            // Nav toggle
+            document.getElementById('navToggle').addEventListener('click', function() {
+                const nl = document.getElementById('navLinks');
+                const open = nl.classList.toggle('open');
+                this.setAttribute('aria-expanded', open);
+            });
 
-        initMap();
-        loadOrderDetails();
-        fetchTrackingData();
-        setInterval(fetchTrackingData, 3000);
-        shareMyLocation();
+            initMap();
+            loadOrderDetails();
+            fetchTrackingData();
+            setInterval(fetchTrackingData, 3000);
+            shareMyLocation();
+        } catch (bootErr) {
+            document.getElementById('trackContent').innerHTML =
+                '<div class="track-error">⚠ Gagal memulai tracking.<br><small style="opacity:0.7;word-break:break-all">' + bootErr.message + '</small><br><small>Order ID: ' + orderId + ' | Role: ' + currentRole + '</small></div>';
+            console.error('Boot error:', bootErr);
+        }
     });
 </script>
 </body>
