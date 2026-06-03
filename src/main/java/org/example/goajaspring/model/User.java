@@ -1,6 +1,9 @@
 package org.example.goajaspring.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -12,10 +15,19 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Nama tidak boleh kosong")
     private String nama;
+
+    @NotBlank(message = "Email tidak boleh kosong")
+    @Email(message = "Format email tidak valid")
     @Column(unique = true)
     private String email;
+
+    @NotBlank(message = "Password tidak boleh kosong")
+    @Size(min = 6, message = "Password minimal 6 karakter")
     private String password;
+
     private String role;
 
     public User() {

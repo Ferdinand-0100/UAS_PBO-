@@ -10,6 +10,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared.css}">
     <style>
+        /* Validation helpers */
+        .field-error {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 0.35rem;
+            letter-spacing: 0.04em;
+        }
+        .form-field.has-error {
+            border-bottom-color: var(--accent);
+        }
+
         /* Split layout untuk driver apply — lebih responsif */
         .driver-apply-section {
             display: grid;
@@ -123,64 +135,97 @@
         <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
         <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
 
-        <form th:action="@{/driver/submit}" method="post" enctype="multipart/form-data" novalidate>
+        <form th:action="@{/driver/submit}" th:object="${application}"
+              method="post" enctype="multipart/form-data" novalidate>
             <!-- Data Pribadi -->
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('nama')} ? 'has-error'">
                 <label for="nama">Nama Lengkap</label>
-                <input type="text" id="nama" name="nama" placeholder="Nama Anda" required>
+                <input type="text" id="nama" name="nama"
+                       th:value="*{nama}" placeholder="Nama Anda" required>
+                <p class="field-error" th:if="${#fields.hasErrors('nama')}"
+                   th:errors="*{nama}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('email')} ? 'has-error'">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="email@example.com" required>
+                <input type="email" id="email" name="email"
+                       th:value="*{email}" placeholder="email@example.com" required>
+                <p class="field-error" th:if="${#fields.hasErrors('email')}"
+                   th:errors="*{email}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('password')} ? 'has-error'">
                 <label for="password">Password Login</label>
-                <input type="password" id="password" name="password" placeholder="Minimal 6 karakter" required>
+                <input type="password" id="password" name="password"
+                       placeholder="Minimal 6 karakter" required>
+                <p class="field-error" th:if="${#fields.hasErrors('password')}"
+                   th:errors="*{password}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('phone')} ? 'has-error'">
                 <label for="phone">Nomor Telepon</label>
-                <input type="tel" id="phone" name="phone" placeholder="081234567890" required>
+                <input type="tel" id="phone" name="phone"
+                       th:value="*{phone}" placeholder="081234567890" required>
+                <p class="field-error" th:if="${#fields.hasErrors('phone')}"
+                   th:errors="*{phone}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('alamat')} ? 'has-error'">
                 <label for="alamat">Alamat</label>
-                <input type="text" id="alamat" name="alamat" placeholder="Jl. Contoh No. 123" required>
+                <input type="text" id="alamat" name="alamat"
+                       th:value="*{alamat}" placeholder="Jl. Contoh No. 123" required>
+                <p class="field-error" th:if="${#fields.hasErrors('alamat')}"
+                   th:errors="*{alamat}"></p>
             </div>
 
             <!-- Data Kendaraan -->
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('kendaraan')} ? 'has-error'">
                 <label for="kendaraan">Jenis Kendaraan</label>
-                <input type="text" id="kendaraan" name="kendaraan" placeholder="Honda Beat 2022" required>
+                <input type="text" id="kendaraan" name="kendaraan"
+                       th:value="*{kendaraan}" placeholder="Honda Beat 2022" required>
+                <p class="field-error" th:if="${#fields.hasErrors('kendaraan')}"
+                   th:errors="*{kendaraan}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('platNomor')} ? 'has-error'">
                 <label for="platNomor">Plat Nomor</label>
-                <input type="text" id="platNomor" name="platNomor" placeholder="B 1234 XYZ" required>
+                <input type="text" id="platNomor" name="platNomor"
+                       th:value="*{platNomor}" placeholder="B 1234 XYZ" required>
+                <p class="field-error" th:if="${#fields.hasErrors('platNomor')}"
+                   th:errors="*{platNomor}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('layananId')} ? 'has-error'">
                 <label for="layananId">Jenis Layanan</label>
                 <select id="layananId" name="layananId" required>
                     <option value="">Pilih layanan...</option>
                     <option th:each="l : ${layananList}"
                             th:value="${l.id}"
-                            th:text="${l.namaLayanan}">Layanan</option>
+                            th:text="${l.namaLayanan}"
+                            th:selected="*{layananId} == ${l.id}">Layanan</option>
                 </select>
+                <p class="field-error" th:if="${#fields.hasErrors('layananId')}"
+                   th:errors="*{layananId}"></p>
             </div>
 
             <!-- Dokumen -->
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('photoPath')} ? 'has-error'">
                 <label for="photo">Foto Diri (Pasfoto)</label>
                 <input type="file" id="photo" name="photo" accept="image/*" required>
+                <p class="field-error" th:if="${#fields.hasErrors('photoPath')}"
+                   th:errors="*{photoPath}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('ktpPath')} ? 'has-error'">
                 <label for="ktp">Scan KTP</label>
                 <input type="file" id="ktp" name="ktp" accept="image/*,application/pdf" required>
+                <p class="field-error" th:if="${#fields.hasErrors('ktpPath')}"
+                   th:errors="*{ktpPath}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('simPath')} ? 'has-error'">
                 <label for="sim">Scan SIM</label>
                 <input type="file" id="sim" name="sim" accept="image/*,application/pdf" required>
+                <p class="field-error" th:if="${#fields.hasErrors('simPath')}"
+                   th:errors="*{simPath}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('stnkPath')} ? 'has-error'">
                 <label for="stnk">Scan STNK</label>
                 <input type="file" id="stnk" name="stnk" accept="image/*,application/pdf" required>
+                <p class="field-error" th:if="${#fields.hasErrors('stnkPath')}"
+                   th:errors="*{stnkPath}"></p>
             </div>
 
             <!-- Actions -->

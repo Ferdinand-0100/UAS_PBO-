@@ -2,26 +2,54 @@
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar — GoAja</title>
     <link rel="stylesheet" th:href="@{/css/shared.css}">
+    <style>
+        .field-error {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 0.35rem;
+            letter-spacing: 0.04em;
+        }
+        .form-field.has-error {
+            border-bottom-color: var(--accent);
+        }
+    </style>
 </head>
 <body>
 <main style="max-width:480px;margin:3rem auto;padding:1rem;">
     <h1>Daftar Akun Baru</h1>
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-    <form th:action="@{/signup}" method="post">
-        <div class="form-field">
-            <label>Nama</label>
-            <input type="text" name="nama" th:value="${user.nama}" required>
+
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-error"   role="alert" th:text="${error}"></div>
+
+    <form th:action="@{/signup}" th:object="${user}" method="post" novalidate>
+
+        <div class="form-field" th:classappend="${#fields.hasErrors('nama')} ? 'has-error'">
+            <label for="nama">Nama</label>
+            <input type="text" id="nama" name="nama"
+                   th:value="*{nama}" required>
+            <p class="field-error" th:if="${#fields.hasErrors('nama')}"
+               th:errors="*{nama}"></p>
         </div>
-        <div class="form-field">
-            <label>Email</label>
-            <input type="email" name="email" th:value="${user.email}" required>
+
+        <div class="form-field" th:classappend="${#fields.hasErrors('email')} ? 'has-error'">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email"
+                   th:value="*{email}" required>
+            <p class="field-error" th:if="${#fields.hasErrors('email')}"
+               th:errors="*{email}"></p>
         </div>
-        <div class="form-field">
-            <label>Password</label>
-            <input type="password" name="password" required>
+
+        <div class="form-field" th:classappend="${#fields.hasErrors('password')} ? 'has-error'">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+            <p class="field-error" th:if="${#fields.hasErrors('password')}"
+               th:errors="*{password}"></p>
         </div>
+
         <div class="form-actions">
             <button type="submit" class="btn-primary">Daftar</button>
             <a href="/login">Sudah punya akun? Masuk</a>

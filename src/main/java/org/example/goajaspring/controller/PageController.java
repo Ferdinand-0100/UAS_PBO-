@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.example.goajaspring.repository.OrderRepository;
 import java.util.ArrayList;
@@ -169,10 +171,24 @@ public class PageController {
 
     /* ADD LAYANAN — POST /layanan */
     @PostMapping("/layanan")
-    public String addLayanan(@ModelAttribute Layanan layanan,
+    public String addLayanan(@Valid @ModelAttribute("newLayanan") Layanan layanan,
+                             BindingResult bindingResult,
+                             Model model,
+                             Authentication authentication,
                              RedirectAttributes ra) {
-        layananService.saveLayanan(layanan);
-        ra.addFlashAttribute("success", "Layanan " + layanan.getNamaLayanan() + " berhasil ditambahkan.");
+        if (bindingResult.hasErrors()) {
+            // Re-render the layanan page with validation errors intact
+            model.addAttribute("layananList", layananService.getAllLayanan());
+            String currentRole = resolveRole(authentication);
+            model.addAttribute("currentRole", currentRole);
+            return "layanan";
+        }
+        try {
+            layananService.saveLayanan(layanan);
+            ra.addFlashAttribute("success", "Layanan " + layanan.getNamaLayanan() + " berhasil ditambahkan.");
+        } catch (RuntimeException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/layanan";
     }
 
@@ -213,6 +229,14 @@ public class PageController {
         }
         if (jarak <= 0) {
             ra.addFlashAttribute("error", "Gagal membuat pesanan: Masukkan jarak perjalanan.");
+            return "redirect:/";
+        }
+        if (lokasiJemput == null || lokasiJemput.isBlank()) {
+            ra.addFlashAttribute("error", "Gagal membuat pesanan: Lokasi penjemputan tidak boleh kosong.");
+            return "redirect:/";
+        }
+        if (lokasiTujuan == null || lokasiTujuan.isBlank()) {
+            ra.addFlashAttribute("error", "Gagal membuat pesanan: Lokasi tujuan tidak boleh kosong.");
             return "redirect:/";
         }
 
@@ -293,5 +317,15 @@ public class PageController {
             ra.addFlashAttribute("error", "Gagal menghapus user: " + e.getMessage());
         }
         return "redirect:/";
+    }
+
+    // ── Helper ────────────────────────────────────────────────
+    private String resolveRole(Authentication authentication) {
+        if (authentication == null) return "USER";
+        var authorities = authentication.getAuthorities();
+        if (authorities == null || authorities.isEmpty()) return "USER";
+        String full = authorities.iterator().next().getAuthority();
+        if (full == null) return "USER";
+        return full.startsWith("ROLE_") ? full.substring(5) : full;
     }
 }

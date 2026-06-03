@@ -12,10 +12,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,44 +49,58 @@ public class DriverApplicationController {
     }
 
     @PostMapping("/driver/submit")
-    public String submitApplication(@ModelAttribute DriverApplication application,
+    public String submitApplication(@Valid @ModelAttribute("application") DriverApplication application,
+                                    BindingResult bindingResult,
                                     @RequestParam("photo") MultipartFile photo,
                                     @RequestParam("ktp")   MultipartFile ktp,
                                     @RequestParam("sim")   MultipartFile sim,
                                     @RequestParam("stnk")  MultipartFile stnk,
-                                    RedirectAttributes ra) {
+                                    Model model,
+                                    Authentication authentication) {
+        // File-presence validation (files can't be checked by Bean Validation)
+        if (photo.isEmpty()) bindingResult.rejectValue("photoPath", "required", "Foto diri wajib diunggah");
+        if (ktp.isEmpty())   bindingResult.rejectValue("ktpPath",   "required", "Scan KTP wajib diunggah");
+        if (sim.isEmpty())   bindingResult.rejectValue("simPath",   "required", "Scan SIM wajib diunggah");
+        if (stnk.isEmpty())  bindingResult.rejectValue("stnkPath",  "required", "Scan STNK wajib diunggah");
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("layananList", layananService.getAllLayanan());
+            model.addAttribute("currentRole", resolveRole(authentication));
+            return "driver_apply";
+        }
+
         try {
             application.setCreatedAt(LocalDateTime.now());
             application.setStatus("PENDING");
 
-            // Store file bytes + original filename + content type directly in DB
-            if (!photo.isEmpty()) {
-                application.setPhotoPath(photo.getOriginalFilename());
-                application.setPhotoData(photo.getBytes());
-                application.setPhotoContentType(photo.getContentType());
-            }
-            if (!ktp.isEmpty()) {
-                application.setKtpPath(ktp.getOriginalFilename());
-                application.setKtpData(ktp.getBytes());
-                application.setKtpContentType(ktp.getContentType());
-            }
-            if (!sim.isEmpty()) {
-                application.setSimPath(sim.getOriginalFilename());
-                application.setSimData(sim.getBytes());
-                application.setSimContentType(sim.getContentType());
-            }
-            if (!stnk.isEmpty()) {
-                application.setStnkPath(stnk.getOriginalFilename());
-                application.setStnkData(stnk.getBytes());
-                application.setStnkContentType(stnk.getContentType());
-            }
+            application.setPhotoPath(photo.getOriginalFilename());
+            application.setPhotoData(photo.getBytes());
+            application.setPhotoContentType(photo.getContentType());
+
+            application.setKtpPath(ktp.getOriginalFilename());
+            application.setKtpData(ktp.getBytes());
+            application.setKtpContentType(ktp.getContentType());
+
+            application.setSimPath(sim.getOriginalFilename());
+            application.setSimData(sim.getBytes());
+            application.setSimContentType(sim.getContentType());
+
+            application.setStnkPath(stnk.getOriginalFilename());
+            application.setStnkData(stnk.getBytes());
+            application.setStnkContentType(stnk.getContentType());
 
             appRepo.save(application);
-            ra.addFlashAttribute("success", "Aplikasi terkirim. Tunggu konfirmasi dari admin.");
+            model.addAttribute("success", "Aplikasi terkirim. Tunggu konfirmasi dari admin.");
+            model.addAttribute("application", new DriverApplication());
+            model.addAttribute("layananList", layananService.getAllLayanan());
+            model.addAttribute("currentRole", resolveRole(authentication));
+            return "driver_apply";
         } catch (IOException e) {
-            ra.addFlashAttribute("error", "Gagal mengirim aplikasi: " + e.getMessage());
+            model.addAttribute("error", "Gagal mengirim aplikasi: " + e.getMessage());
+            model.addAttribute("layananList", layananService.getAllLayanan());
+            model.addAttribute("currentRole", resolveRole(authentication));
+            return "driver_apply";
         }
-        return "redirect:/";
     }
 
     /**

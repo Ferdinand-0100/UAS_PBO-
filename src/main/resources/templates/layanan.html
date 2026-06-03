@@ -10,6 +10,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared.css}">
     <style>
+        /* Validation helpers */
+        .field-error {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 0.35rem;
+            letter-spacing: 0.04em;
+        }
+        .form-field.has-error {
+            border-bottom-color: var(--accent);
+        }
+
         /* Layanan cards grid — used instead of table for this page */
         .layanan-grid {
             display: grid;
@@ -133,16 +145,22 @@
     <div class="split-right">
         <p class="split-right-title">Tambah Layanan Baru</p>
 
-        <form th:action="@{/layanan}" method="post" novalidate>
-            <div class="form-field">
+        <form th:action="@{/layanan}" th:object="${newLayanan}" method="post" novalidate>
+            <div class="form-field" th:classappend="${#fields.hasErrors('namaLayanan')} ? 'has-error'">
                 <label for="namaLayanan">Nama Layanan</label>
                 <input type="text" id="namaLayanan" name="namaLayanan"
+                       th:value="*{namaLayanan}"
                        placeholder="GoRide" required>
+                <p class="field-error" th:if="${#fields.hasErrors('namaLayanan')}"
+                   th:errors="*{namaLayanan}"></p>
             </div>
-            <div class="form-field">
+            <div class="form-field" th:classappend="${#fields.hasErrors('tarifPerKm')} ? 'has-error'">
                 <label for="tarifPerKm">Tarif per Km (Rp)</label>
                 <input type="number" id="tarifPerKm" name="tarifPerKm"
-                       placeholder="3000" min="0" step="500" required>
+                       th:value="*{tarifPerKm}"
+                       placeholder="3000" min="1" step="500" required>
+                <p class="field-error" th:if="${#fields.hasErrors('tarifPerKm')}"
+                   th:errors="*{tarifPerKm}"></p>
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Tambah Layanan</button>

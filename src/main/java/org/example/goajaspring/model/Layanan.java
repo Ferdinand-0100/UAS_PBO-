@@ -1,5 +1,7 @@
 package org.example.goajaspring.model;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 
 @Entity
 public class Layanan {
@@ -7,8 +9,12 @@ public class Layanan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Nama layanan tidak boleh kosong")
     @Column(unique = true)
     private String namaLayanan;
+
+    @Positive(message = "Tarif per km harus lebih dari 0")
     private double tarifPerKm;
 
     public Layanan() {

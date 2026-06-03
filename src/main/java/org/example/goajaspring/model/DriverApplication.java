@@ -1,6 +1,7 @@
 package org.example.goajaspring.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,15 +11,31 @@ public class DriverApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Nama tidak boleh kosong")
     private String nama;
+
+    @NotBlank(message = "Email tidak boleh kosong")
+    @Email(message = "Format email tidak valid")
     private String email;
+
+    @NotBlank(message = "Password tidak boleh kosong")
+    @Size(min = 6, message = "Password minimal 6 karakter")
     private String password;
+
+    @NotBlank(message = "Nomor telepon tidak boleh kosong")
     private String phone;
+
+    @NotBlank(message = "Alamat tidak boleh kosong")
     private String alamat;
 
+    @NotBlank(message = "Jenis kendaraan tidak boleh kosong")
     private String kendaraan;
+
+    @NotBlank(message = "Plat nomor tidak boleh kosong")
     private String platNomor;
-    private Long layananId; // referensi ke layanan yang dipilih
+
+    @NotNull(message = "Pilih jenis layanan")
+    private Long layananId;
 
     // Original filename (for display only)
     private String photoPath;
