@@ -380,26 +380,23 @@
     async function fetchTrackingData() {
         try {
             const res = await fetch(`/api/orders/${orderId}/track`);
-            if (!res.ok) throw new Error('Gagal mengambil data (status ' + res.status + ')');
+            if (!res.ok) throw new Error('Server error ' + res.status);
             const data = await res.json();
 
-            // Always replace the loading spinner — even if location not yet available
+            // Always replace content — clears the spinner on first successful response
             document.getElementById('trackContent').innerHTML = renderInfo(data);
 
             if (data.driverLat != null) updateMarker('driver', data.driverLat, data.driverLng);
             if (data.userLat   != null) updateMarker('user',   data.userLat,   data.userLng);
 
-            // Fit bounds once after first real data arrives
             if (!state.initialBoundsDone && (data.driverLat != null || data.userLat != null)) {
                 fitBoundsToAll();
                 state.initialBoundsDone = true;
             }
         } catch (err) {
-            // Only show error if still on loading screen — don't wipe valid content
-            const content = document.getElementById('trackContent');
-            if (content.querySelector('.track-loading')) {
-                content.innerHTML = `<div class="track-error">⚠ ${err.message}</div>`;
-            }
+            // Always show the error — never stay on spinner indefinitely
+            document.getElementById('trackContent').innerHTML =
+                `<div class="track-error">⚠ Gagal memuat data tracking.<br><small style="opacity:0.7">${err.message}</small><br><br><small>Mencoba ulang setiap 3 detik...</small></div>`;
             console.error('Tracking error:', err);
         }
     }
