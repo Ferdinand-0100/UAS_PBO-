@@ -373,13 +373,19 @@
                             Terima
                         </button>
 
-                        <!-- STATUS DIJEMPUT: Button JALAN -->
-                        <button th:if="${order.status == 'DIJEMPUT'}"
-                                type="button"
-                                class="btn-primary btn-sm"
-                                th:onclick="'updateOrder(' + ${order.id} + ', &quot;SELESAI&quot;)'">
-                            Jalan
-                        </button>
+        <!-- STATUS DIJEMPUT: Button SELESAI + Tracking -->
+                        <div th:if="${order.status == 'DIJEMPUT'}" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                            <button type="button"
+                                    class="btn-primary btn-sm"
+                                    th:onclick="'confirmSelesai(' + ${order.id} + ')'">
+                                Selesai
+                            </button>
+                            <a th:href="@{/track/{id}(id=${order.id})}"
+                               class="btn-outline btn-sm"
+                               style="text-decoration:none;">
+                                Tracking
+                            </a>
+                        </div>
 
                         <!-- STATUS SELESAI: Button disabled (info) -->
                         <button th:if="${order.status == 'SELESAI'}"
@@ -522,26 +528,31 @@
     }
 
     // ===== DRIVER: Update order status (DIJEMPUT → SELESAI) =====
-    function updateOrder(orderId, newStatus) {
-        const msg = newStatus === 'SELESAI' ? 'Tandai pesanan sebagai selesai?' : 'Mulai perjalanan?';
-        if (confirm(msg)) {
+    function confirmSelesai(orderId) {
+        showConfirmModal('Tandai pesanan ini sebagai selesai?', () => {
             fetch('/api/orders/' + orderId + '/update-status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
+                body: JSON.stringify({ status: 'SELESAI' })
             })
             .then(response => {
                 if (response.ok) {
                     location.reload();
                 } else {
-                    alert('Gagal memperbarui status');
+                    return response.text().then(text => {
+                        throw new Error(text || 'Gagal memperbarui status');
+                    });
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan');
+                showErrorModal('Gagal menyelesaikan pesanan: ' + error.message);
             });
-        }
+        });
+    }
+
+    // ===== DRIVER: Update order status (legacy, kept for safety) =====
+    function updateOrder(orderId, newStatus) {
+        confirmSelesai(orderId);
     }
 
         // ===== USER: Show "Berhasil Dapat Driver" modal (with bouncy animation) =====

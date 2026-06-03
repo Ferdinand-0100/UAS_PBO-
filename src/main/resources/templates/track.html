@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<html lang="id" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -201,7 +202,7 @@
         <li th:if="${currentRole == 'ADMIN'}"><a href="/layanan">Layanan</a></li>
     </ul>
     <div class="nav-right">
-        <span class="nav-user" th:text="${#authentication.name}">User</span>
+        <span class="nav-user" sec:authentication="name">User</span>
         <form th:action="@{/logout}" method="post">
             <button type="submit" class="btn-logout">Keluar</button>
         </form>
@@ -379,9 +380,10 @@
     async function fetchTrackingData() {
         try {
             const res = await fetch(`/api/orders/${orderId}/track`);
-            if (!res.ok) throw new Error('Gagal mengambil data tracking');
+            if (!res.ok) throw new Error('Gagal mengambil data (status ' + res.status + ')');
             const data = await res.json();
 
+            // Always replace the loading spinner — even if location not yet available
             document.getElementById('trackContent').innerHTML = renderInfo(data);
 
             if (data.driverLat != null) updateMarker('driver', data.driverLat, data.driverLng);
@@ -393,8 +395,12 @@
                 state.initialBoundsDone = true;
             }
         } catch (err) {
-            document.getElementById('trackContent').innerHTML =
-                `<div class="track-error">⚠ ${err.message}</div>`;
+            // Only show error if still on loading screen — don't wipe valid content
+            const content = document.getElementById('trackContent');
+            if (content.querySelector('.track-loading')) {
+                content.innerHTML = `<div class="track-error">⚠ ${err.message}</div>`;
+            }
+            console.error('Tracking error:', err);
         }
     }
 
