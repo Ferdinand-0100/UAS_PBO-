@@ -308,7 +308,8 @@
     // ── Draw straight-line route ──────────────────────────────
     function drawRoute(pLat, pLng, dLat, dLng) {
         if (state.routePolyline) state.map.removeLayer(state.routePolyline);
-        state.routePolyline = L.polyline([[pLat, pLng], [dLat, dLng]], {
+        var points = [ [pLat, pLng], [dLat, dLng] ];
+        state.routePolyline = L.polyline(points, {
             color: '#DE3163', weight: 3, opacity: 0.5, dashArray: '6, 6'
         }).addTo(state.map);
     }
